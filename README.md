@@ -216,6 +216,46 @@ Botões na app: "Carregar catálogo (ADD+PAX)" carrega `data/pectabs.json`;
 "Importar JSON" aceita qualquer array de registos no formato acima,
 colado ou por ficheiro.
 
+### Verificação sobre o catálogo todo
+
+Para validar o motor de matching não só em casos isolados mas nos 173
+registos reais de uma vez, corremos `matchOne`/`computeMatches` (o
+código de `app.js`, sem alterações) fora do browser, fazendo
+self-match de cada registo contra si próprio e contra o catálogo
+inteiro, a duas tolerâncias (0mm e 6mm). Resultado: zero crashes, zero
+self-matches que não dessem "exato", zero anomalias na decisão
+`inUse` — o motor comporta-se de forma consistente em todo o
+catálogo, não só nos casos testados manualmente (P6301/P9201,
+P0701/P2101). Esta verificação não apontou nenhum bug, mas revelou duas
+características dos próprios dados que vale a pena confirmar com quem
+gere os PECTABs:
+
+1. **34 grupos de PECTABs com especificação física idêntica**
+   (mesmo `dir`/`st`/`len`/`pax`/`main`/`add`), 47 IDs no total "à
+   sombra" de outro. Por exemplo, `P0401`, `P0403`, `P0404` e `P0405`
+   são todos `PAX · 2 talões · 400mm · pax 55 · main 320 · add 12` —
+   fisicamente indistinguíveis. A app recomenda sempre o ID de menor
+   número de cada grupo (critério de desempate por ordem no catálogo);
+   os restantes nunca aparecem em primeiro lugar, mesmo que a medida
+   física bata certo exatamente com eles. Pode ser intencional (mesmo
+   layout emitido para rotas/destinos diferentes) ou redundância a
+   limpar no catálogo — não há como distinguir sem confirmação humana.
+   Outros grupos: `P0801`/`P6801`/`P8701`; `P2601`-`P2604`+`P3001`;
+   `P8501`/`P8503`/`P8504`/`P8901`/`P8902`/`P9001`/`P9002`; entre mais
+   29 pares/grupos menores.
+
+2. **14 registos com "soma das secções ≠ comprimento declarado" bem
+   acima do ruído habitual.** O aviso `warn.lenSum` já existe na app
+   para qualquer diferença (a maioria dos 104 casos no catálogo é
+   ±1-3mm, já documentado como normal), mas estes 14 destacam-se por
+   serem muito maiores: **P5301 (soma 95mm maior que o `len`
+   declarado)**, **P5603 e P7401 (-45mm cada)**, **P9102 (-37mm)**,
+   **P4702–P4704 (-29 a -31mm)**, e mais 8 entre -21 e +50mm. Podem
+   refletir um desenho físico real (ex: secções que se sobrepõem) ou
+   um erro de transcrição na folha de origem — vale confirmar
+   especificamente estes com o especialista, já que o desvio é grande
+   demais para ser só arredondamento.
+
 ## Regenerar o catálogo a partir de novos dados
 
 Fonte atual (folha de cálculo "bagtag specs", uma aba chamada
