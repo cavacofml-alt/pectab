@@ -98,6 +98,9 @@ function matchOne(physical, rec) {
   if (declaredSum !== rec.len) {
     reasons.push(`aviso: len declarado (${rec.len}) != soma das secções (${declaredSum})`);
   }
+  if (rec.eq === false) {
+    reasons.push("aviso: eq=N — talões não são todos do mesmo tamanho, add pode não refletir cada talão");
+  }
 
   return { hardFail: false, score, classification, deltas, reasons };
 }
@@ -148,7 +151,8 @@ function renderDbList() {
   for (const rec of state.db) {
     const tr = document.createElement("tr");
     tr.className = rec.id === state.selected ? "selected" : "";
-    tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td>`;
+    const eqBadge = rec.eq === false ? '<span class="badge risky" title="talões não são todos iguais">eq=N</span>' : "";
+    tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td><td>${eqBadge}</td>`;
     tr.addEventListener("click", () => {
       state.selected = rec.id;
       renderDbList();
@@ -422,6 +426,8 @@ function readPectabForm() {
     pax: num("new-pax"),
     main: num("new-main"),
     add: num("new-add"),
+    eq: el("new-eq").value === "Y",
+    dest: num("new-dest") || undefined,
     remarks: el("new-remarks").value.trim(),
   };
 }
@@ -476,20 +482,27 @@ function init() {
     renderHistory();
   });
 
-  el("load-sample").addEventListener("click", async () => {
+  async function loadFromFile(path, label) {
     try {
-      const res = await fetch("data/sample-pectabs.json");
-      const sample = await res.json();
-      for (const rec of sample) {
-        if (!state.db.some((r) => r.id === rec.id)) state.db.push(rec);
+      const res = await fetch(path);
+      const recs = await res.json();
+      let added = 0;
+      for (const rec of recs) {
+        if (!state.db.some((r) => r.id === rec.id)) {
+          state.db.push(rec);
+          added++;
+        }
       }
       saveDb(state.db);
       renderDbList();
-      toast("Dados de exemplo carregados.");
+      toast(`${label}: ${added} PECTAB(s) adicionados (${recs.length - added} já existiam).`);
     } catch (e) {
-      toast("Não foi possível carregar data/sample-pectabs.json (a correr via file://? tenta um servidor local).");
+      toast(`Não foi possível carregar ${path} (a correr via file://? tenta um servidor local).`);
     }
-  });
+  }
+
+  el("load-sample").addEventListener("click", () => loadFromFile("data/sample-pectabs.json", "Exemplo fictício"));
+  el("load-catalog").addEventListener("click", () => loadFromFile("data/pectabs.json", "Catálogo real"));
 
   el("import-json-btn").addEventListener("click", () => {
     const text = el("import-json-text").value.trim();

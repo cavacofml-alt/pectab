@@ -19,13 +19,14 @@
       <h2>Base de PECTABs (local)</h2>
       <div class="pectab-list">
         <table>
-          <thead><tr><th>ID</th><th>dir</th><th>len</th><th>st</th></tr></thead>
+          <thead><tr><th>ID</th><th>dir</th><th>len</th><th>st</th><th></th></tr></thead>
           <tbody id="db-list-body"></tbody>
         </table>
-        <p class="empty-state" id="db-empty">Base vazia. Carrega os dados de exemplo ou adiciona um PECTAB abaixo.</p>
+        <p class="empty-state" id="db-empty">Base vazia. Carrega o catálogo real (ADD+PAX) ou adiciona um PECTAB abaixo.</p>
       </div>
       <div class="row mt">
-        <button type="button" class="secondary" id="load-sample">Carregar exemplo</button>
+        <button type="button" class="secondary" id="load-catalog">Carregar catálogo (ADD+PAX)</button>
+        <button type="button" class="secondary" id="load-sample">Carregar exemplo fictício</button>
         <button type="button" class="ghost" id="export-db-btn">Exportar base (JSON)</button>
         <button type="button" class="ghost" id="delete-selected">Apagar selecionado</button>
       </div>
@@ -42,6 +43,8 @@
           <div><label>pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
           <div><label>main (mm)</label><input id="new-main" type="number" min="0" required></div>
           <div><label>add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
+          <div><label>eq (talões iguais)</label><select id="new-eq"><option value="Y">Y</option><option value="N">N</option></select></div>
+          <div><label>dest</label><input id="new-dest" type="number" min="0"></div>
         </div>
         <label class="mt">remarks</label>
         <input id="new-remarks">

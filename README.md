@@ -34,6 +34,11 @@ Um PECTAB é um registo com:
 - `pax` — comprimento da secção do passageiro (mm)
 - `main` — comprimento da secção principal/código de barras (mm)
 - `add` — comprimento de cada talão adicional (mm)
+- `eq` — booleano, se todos os talões adicionais têm o mesmo tamanho
+  (quando `false`, o campo `add` é só um valor nominal — o export não dá
+  o tamanho individual de cada talão, por isso o visualizador não
+  consegue desenhar isso com exatidão; a app mostra um aviso nesse caso)
+- `dest` — nº de destinos que o PECTAB suporta (informativo)
 - `remarks` — texto livre
 
 A "medida física" introduzida no formulário de matching usa exatamente os
@@ -96,20 +101,60 @@ Quando nenhum candidato serve, o botão "Exportar pedido de compilação"
 gera um `.txt` com os valores medidos e as notas de desvio do melhor
 candidato encontrado, pronto a anexar a um pedido de compilação nova.
 
-## Importar dados reais
+## Dados
 
-O botão "Importar JSON" aceita um array de registos no formato acima. Não
-há (ainda) um parser para `ADD.txt`/`PAX.txt` nem para a raw string AEA da
-impressora — os formatos variam por fabricante e por template carregado,
-por isso não é uma conversão mecânica. Ver `data/sample-pectabs.json` para
-o formato esperado; os três registos aí são **exemplos ilustrativos**
-(FRA/P6301/P9201) com valores de demonstração, não dados reais extraídos
-de um DCS.
+Há dois ficheiros em `data/`:
+
+- `data/sample-pectabs.json` — **exemplos fictícios** (FRA/P6301/P9201)
+  com valores de demonstração, para testar rapidamente o motor de
+  matching e o visualizador. Não são dados reais.
+- `data/pectabs.json` — catálogo **real**, gerado a partir de um export
+  DCS (`ADD.txt` + `PAX.txt`, formato descrito no `HELP.txt` desse
+  sistema). 127 registos (58 de `PAX.txt`, 69 de `ADD.txt`). Regenerado
+  com o script em `scripts/parse-pectabs.py` — ver secção seguinte.
+
+Achados ao gerar o catálogo, só a partir do parsing (sem nenhuma medida
+física envolvida):
+
+- **76 dos 127 PECTABs (60%) têm `len` declarado diferente da soma
+  `pax + main + st*add`**, com desvios entre -19mm e +45mm. Isto confirma
+  que o problema "len não bate com a soma das secções" não é um caso
+  isolado neste sistema — é a norma, não a exceção.
+- `P8101` tem todos os campos de medida a zero (`len=main=add=pax=0`) —
+  parece um registo placeholder/não configurado, não uma etiqueta real.
+- 10 registos têm `eq=N` (talões adicionais de tamanhos diferentes):
+  `P3101, P3102, P7701-P7704, P7801-P7804`.
+- O campo `remarks` no export real é quase sempre só `N` (uma vez `Y`),
+  nunca texto descritivo — ao contrário do exemplo no `HELP.txt`
+  (`"barcodes outside"`). Provavelmente é um flag "tem observações
+  noutro sítio", não o texto em si; foi importado tal e qual.
+
+Botões na app: "Carregar catálogo (ADD+PAX)" carrega `data/pectabs.json`;
+"Carregar exemplo fictício" carrega `data/sample-pectabs.json`. O botão
+"Importar JSON" aceita qualquer array de registos no formato acima,
+colado ou por ficheiro.
+
+## Regenerar o catálogo a partir de novos exports
+
+`scripts/parse-pectabs.py` lê os dois ficheiros de texto de largura fixa
+(`pectab dir st len main add eq pax dest remarks`, um registo por linha,
+campos separados por espaço, `remarks` livre até ao fim da linha) e
+produz o JSON em `data/pectabs.json`:
+
+```
+python3 scripts/parse-pectabs.py caminho/PAX.txt caminho/ADD.txt > data/pectabs.json
+```
+
+Imprime avisos em stderr para linhas mal formadas, IDs duplicados entre
+os dois ficheiros, e um resumo dos casos `len=0` / `eq=N` / `len != soma`
+encontrados.
+
+Ainda não há (nem está planeado sem uma amostra) um parser para a raw
+string AEA da impressora — os formatos variam por fabricante e por
+template carregado, não é uma conversão mecânica.
 
 ## Por construir (fora do âmbito desta primeira versão)
 
-- Parser dedicado para exports `ADD.txt`/`PAX.txt` reais (formato a
-  confirmar com uma amostra)
 - Leitura da raw string AEA por fabricante de impressora
 - Anexar fotos aos registos de histórico
 - Sincronização entre postos de trabalho (fora do âmbito deliberado —
