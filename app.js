@@ -745,18 +745,37 @@ function extractPhysicalFieldsFromText(text) {
   found.main = roundMm(numAfterLabel("main\\s*tag\\s*(?:part\\s*)?length"), "main");
 
   const addMatch = text.match(/additional\s*stubs?\s*length\s*(?:in\s*mm)?\s*[:=]\s*([\d.]+(?:\s*&\s*[\d.]+)*)/i);
-  if (addMatch) {
-    const vals = addMatch[1]
-      .split("&")
-      .map((s) => Math.round(parseFloat(s.trim())))
-      .filter((v) => !isNaN(v));
-    found.add = vals.length ? vals[0] : null;
-    if (vals.length > 1) {
-      notes.push(t("docx.multiValueNote", { count: vals.length, values: vals.join(", "), first: vals[0] }));
+  const addVals = addMatch
+    ? addMatch[1]
+        .split("&")
+        .map((s) => Math.round(parseFloat(s.trim())))
+        .filter((v) => !isNaN(v))
+    : [];
+
+  // alguns formulários dizem "Additional Stubs length" mas dão a SOMA de
+  // todos os talões, não o valor de cada um — e só desambiguam na frase
+  // do nº de talões (ex: "3 Stubs each 15mm"). Essa frase, quando
+  // existe, é inequívoca sobre o valor por talão — teve sempre prioridade
+  // sobre a linha "length" (que pode ser total, soma, ou lista com "&").
+  const eachStubMatch = text.match(/(\d+)\s*stubs?\s*each\s*([\d.]+)\s*mm/i);
+  if (eachStubMatch) {
+    const perStub = Math.round(parseFloat(eachStubMatch[2]));
+    found.add = perStub;
+    if (addVals.length === 1 && addVals[0] !== perStub) {
+      notes.push(t("docx.totalVsPerStubNote", { total: addVals[0], count: eachStubMatch[1], perStub }));
     }
+  } else if (addVals.length) {
+    found.add = addVals[0];
+    if (addVals.length > 1) {
+      notes.push(t("docx.multiValueNote", { count: addVals.length, values: addVals.join(", "), first: addVals[0] }));
+    }
+  } else {
+    found.add = null;
   }
 
-  const stMatch = text.match(/(?:how\s*many\s*additional\s*stubs|number\s*of\s*additional\s*stubs|n[ºo]\.?\s*of\s*additional\s*stubs)\s*[:=]?\s*(\d+)/i);
+  const stMatch =
+    eachStubMatch ||
+    text.match(/(?:how\s*many\s*additional\s*stubs|number\s*of\s*additional\s*stubs|n[ºo]\.?\s*of\s*additional\s*stubs)\s*[:=]?\s*(\d+)/i);
   found.st = stMatch ? parseInt(stMatch[1], 10) : null;
 
   const checkedRe = /[☒☑✓✔]/;
