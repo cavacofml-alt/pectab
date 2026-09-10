@@ -482,27 +482,21 @@ function init() {
     renderHistory();
   });
 
-  async function loadFromFile(path, label) {
-    try {
-      const res = await fetch(path);
-      const recs = await res.json();
-      let added = 0;
-      for (const rec of recs) {
-        if (!state.db.some((r) => r.id === rec.id)) {
-          state.db.push(rec);
-          added++;
-        }
+  function loadFromArray(recs, label) {
+    let added = 0;
+    for (const rec of recs) {
+      if (!state.db.some((r) => r.id === rec.id)) {
+        state.db.push(rec);
+        added++;
       }
-      saveDb(state.db);
-      renderDbList();
-      toast(`${label}: ${added} PECTAB(s) adicionados (${recs.length - added} já existiam).`);
-    } catch (e) {
-      toast(`Não foi possível carregar ${path} (a correr via file://? tenta um servidor local).`);
     }
+    saveDb(state.db);
+    renderDbList();
+    toast(`${label}: ${added} PECTAB(s) adicionados (${recs.length - added} já existiam).`);
   }
 
-  el("load-sample").addEventListener("click", () => loadFromFile("data/sample-pectabs.json", "Exemplo fictício"));
-  el("load-catalog").addEventListener("click", () => loadFromFile("data/pectabs.json", "Catálogo real"));
+  el("load-sample").addEventListener("click", () => loadFromArray(PECTAB_SAMPLE, "Exemplo fictício"));
+  el("load-catalog").addEventListener("click", () => loadFromArray(PECTAB_CATALOG, "Catálogo real"));
 
   el("import-json-btn").addEventListener("click", () => {
     const text = el("import-json-text").value.trim();

@@ -20,8 +20,13 @@ este projeto para a comparação com uma stack Next.js/FastAPI/Postgres.
 
 ## Como correr
 
-Não há passo de instalação. Abre `index.html` diretamente no browser
-(duplo clique, ou `file://`). Não precisa de servidor.
+Não há passo de instalação nem servidor necessário. Abre `index.html`
+diretamente no browser — duplo clique funciona, incluindo os botões de
+carregar catálogo. Os dados (`data/pectabs.json` e
+`data/sample-pectabs.json`) vêm embutidos em `data.js`, carregado antes
+de `app.js`, exatamente para evitar o bloqueio de CORS que o Chrome/Edge
+aplica a `fetch()` de ficheiros locais quando a página é aberta como
+`file://`.
 
 ## Modelo de dados
 
@@ -148,6 +153,17 @@ python3 scripts/parse-pectabs.py caminho/PAX.txt caminho/ADD.txt > data/pectabs.
 Imprime avisos em stderr para linhas mal formadas, IDs duplicados entre
 os dois ficheiros, e um resumo dos casos `len=0` / `eq=N` / `len != soma`
 encontrados.
+
+Depois de mudar `data/pectabs.json` ou `data/sample-pectabs.json`,
+**corre também** `scripts/build-data-js.py` para regenerar `data.js` —
+é esse ficheiro que a app carrega de facto, os `.json` em `data/` são só
+a fonte legível/versionável:
+
+```
+python3 scripts/build-data-js.py
+```
+
+`data.js` é gerado — não editar à mão.
 
 Ainda não há (nem está planeado sem uma amostra) um parser para a raw
 string AEA da impressora — os formatos variam por fabricante e por
