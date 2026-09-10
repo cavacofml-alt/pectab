@@ -89,7 +89,13 @@ function matchOne(physical, rec) {
     len: physical.len - rec.len,
   };
 
-  const addWeight = WEIGHTS.add * Math.max(1, rec.st / 2);
+  // um desvio no "add" não fica isolado num talão — a perfuração física
+  // repete-se a cada `st` talões com o MESMO espaçamento errado, por isso
+  // o desalinhamento acumula: no pior caso (o último talão), o desvio
+  // total é delta × st, não delta × st/2. Um PECTAB com 3 talões e o
+  // "add" errado por 5mm não desalinha o 1º talão em 5mm — desalinha o
+  // 3º em 15mm. O peso tem de refletir o pior caso, não a média.
+  const addWeight = WEIGHTS.add * Math.max(1, rec.st);
   const breakdown = [
     { field: "pax", delta: deltas.pax, weight: WEIGHTS.pax, impact: -Math.abs(deltas.pax) * WEIGHTS.pax },
     { field: "main", delta: deltas.main, weight: WEIGHTS.main, impact: -Math.abs(deltas.main) * WEIGHTS.main },
@@ -109,6 +115,16 @@ function matchOne(physical, rec) {
     classification = "risky";
   } else {
     classification = "recompile";
+  }
+
+  // um PECTAB com talões supostamente todos iguais (eq != false) mas cujo
+  // "add" não bate certo vai desalinhar-se progressivamente a cada talão
+  // adicional — visto em campo: a impressora não imprimiu o talão e o
+  // 2º/3º saíram desalinhados, mesmo com pax/main/len praticamente
+  // corretos. Por mais alto que o score dê, isto nunca é "seguro".
+  if (classification === "safe" && rec.eq !== false && deltas.add !== 0 && rec.st > 1) {
+    classification = "risky";
+    reasons.push({ key: "warn.addMisalign", params: { delta: deltas.add, st: rec.st, worst: Math.abs(deltas.add * rec.st) } });
   }
 
   const declaredSum = sectionSum(rec);

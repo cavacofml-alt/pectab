@@ -34,7 +34,7 @@ const I18N = {
     "legend.multiValueNote.html":
       'Se o formulário listar <strong>mais do que um valor</strong> em "Additional Stub(s) length" (ex: "15 &amp; 10") os talões não são todos do mesmo tamanho — a ferramenta só aceita um valor de <code>add</code> por busca. Corre "Procurar match" uma vez por cada valor e compara os resultados.',
     "legend.toleranceNote.html":
-      'O campo <code>tolerância len</code> não existe no teu formulário — é só desta ferramenta: quantos mm de diferença entre o teu <code>len</code> medido e o <code>len</code> de um PECTAB ainda são aceites antes de o excluir da lista. <code>0</code> = exige igual.',
+      'O campo <code>tolerância len</code> não existe no teu formulário — é só desta ferramenta: quantos mm de diferença entre o teu <code>len</code> medido e o <code>len</code> de um PECTAB ainda são aceites antes de o excluir da lista. <code>0</code> = exige igual. <strong>Nota de campo:</strong> etiquetas medem-se por vezes pelo liner, por vezes pela própria etiqueta — isso sozinho já pode dar até 6mm de diferença (3mm de cada lado). Se uma busca estrita (tolerância 0) não encontrar nada bom, tenta 3-6mm antes de assumir que precisas de compilação nova. Isto só se aplica a <code>len</code>/<code>pax</code>/<code>main</code> — um desvio no <code>add</code> (talão) é outra história: desalinha-se e acumula a cada talão, não é "só medição".',
 
     "panel.physical.title": "Medida física (rolo testado)",
     "btn.importDocx": "Preencher a partir do .docx",
@@ -159,6 +159,7 @@ const I18N = {
     "fail.len": "comprimento total desvia {delta}mm (acima da tolerância de {tolerance}mm)",
     "warn.lenSum": "O len declarado deste PECTAB ({len}mm) não bate com a soma das suas secções ({sum}mm) — {diff}mm de inconsistência já no próprio registo, antes de comparar com a tua medida.",
     "warn.eqN": 'Este PECTAB tem talões de tamanhos diferentes (eq=N) — o valor "add" acima é só uma referência nominal, não representa cada talão.',
+    "warn.addMisalign": "O talão (add) desvia {delta}mm — como se repete em {st} talões, o desalinhamento acumula: o último talão pode ficar {worst}mm fora do sítio. Visto em campo: talão sem imprimir e 2º/3º talão desalinhados. Nunca classificado como seguro só por causa disto — testa fisicamente antes de usar em produção.",
 
     "results.empty.noSearch": 'Introduz as medidas físicas e clica em "Procurar match" para veres candidatos.',
     "results.empty.noCandidates": 'Nenhum candidato passou os filtros de exclusão. Ver secção "Excluídos" abaixo, ou exporta um pedido de compilação nova.',
@@ -247,7 +248,7 @@ const I18N = {
     "legend.multiValueNote.html":
       'If the form lists <strong>more than one value</strong> for "Additional Stub(s) length" (e.g. "15 &amp; 10") the stubs aren\'t all the same size — this tool only takes one <code>add</code> value per search. Run "Search match" once per value and compare the results.',
     "legend.toleranceNote.html":
-      'The <code>len tolerance</code> field has no equivalent on your form — it\'s a setting of this tool only: how many mm of difference between your measured <code>len</code> and a PECTAB\'s <code>len</code> are still accepted before excluding it from the list. <code>0</code> = requires an exact match.',
+      'The <code>len tolerance</code> field has no equivalent on your form — it\'s a setting of this tool only: how many mm of difference between your measured <code>len</code> and a PECTAB\'s <code>len</code> are still accepted before excluding it from the list. <code>0</code> = requires an exact match. <strong>Field note:</strong> tags are sometimes measured by the liner, sometimes by the tag itself — that alone can account for up to 6mm of difference (3mm each side). If a strict search (tolerance 0) finds nothing good, try 3-6mm before assuming you need a new compile. This only applies to <code>len</code>/<code>pax</code>/<code>main</code> — a deviation in <code>add</code> (stub) is a different story: it misaligns and compounds with every stub, it\'s not "just measurement".',
 
     "panel.physical.title": "Physical measurement (tested roll)",
     "btn.importDocx": "Fill from .docx",
@@ -372,6 +373,7 @@ const I18N = {
     "fail.len": "total length deviates {delta}mm (above the {tolerance}mm tolerance)",
     "warn.lenSum": "This PECTAB's declared len ({len}mm) doesn't match the sum of its sections ({sum}mm) — {diff}mm of inconsistency already in the record itself, before comparing to your measurement.",
     "warn.eqN": 'This PECTAB has additional stubs of different sizes (eq=N) — the "add" value above is only a nominal reference, not each individual stub.',
+    "warn.addMisalign": "The stub (add) deviates {delta}mm — since it repeats over {st} stubs, the misalignment compounds: the last stub can end up {worst}mm off. Seen in the field: a stub not printing at all, and the 2nd/3rd stub misaligned. Never classified as safe just from a small add mismatch — test physically before using in production.",
 
     "results.empty.noSearch": 'Enter the physical measurements and click "Search match" to see candidates.',
     "results.empty.noCandidates": 'No candidate passed the exclusion filters. See the "Excluded" section below, or export a new compilation request.',
