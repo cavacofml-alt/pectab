@@ -26,10 +26,12 @@
     <section class="panel">
       <h2 data-i18n="panel.db.title">Base de PECTABs (local)</h2>
       <div class="pectab-list">
+        <div class="table-wrap">
         <table>
           <thead><tr><th>ID</th><th>dir</th><th>len</th><th>st</th><th></th></tr></thead>
           <tbody id="db-list-body"></tbody>
         </table>
+        </div>
         <p class="empty-state" id="db-empty" data-i18n="db.empty">Base vazia. Carrega o catálogo real (ADD+PAX) ou adiciona um PECTAB abaixo.</p>
       </div>
       <div class="row mt">
@@ -44,17 +46,17 @@
       <h2 data-i18n="panel.addPectab.title">Adicionar PECTAB</h2>
       <form id="add-pectab-form">
         <div class="field-grid">
-          <div><label data-i18n="label.id">ID</label><input id="new-id" required></div>
-          <div><label data-i18n-title="field.dir.tooltip" title="">dir</label><select id="new-dir"><option>PAX</option><option>ADD</option></select></div>
-          <div><label data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="new-st" type="number" min="0" value="0" required></div>
-          <div><label data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="new-len" type="number" min="0" required></div>
-          <div><label data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
-          <div><label data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="new-main" type="number" min="0" required></div>
-          <div><label data-i18n-title="field.add.tooltip.new" title="">add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
-          <div><label data-i18n-title="field.eq.tooltip" title="">eq (talões iguais)</label><select id="new-eq"><option value="Y">Y</option><option value="N">N</option></select></div>
-          <div><label data-i18n-title="field.dest.tooltip" title="">dest</label><input id="new-dest" type="number" min="0"></div>
+          <div><label for="new-id" data-i18n="label.id">ID</label><input id="new-id" required></div>
+          <div><label for="new-dir" data-i18n-title="field.dir.tooltip" title="">dir</label><select id="new-dir"><option>PAX</option><option>ADD</option></select></div>
+          <div><label for="new-st" data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="new-st" type="number" min="0" value="0" required></div>
+          <div><label for="new-len" data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="new-len" type="number" min="0" required></div>
+          <div><label for="new-pax" data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
+          <div><label for="new-main" data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="new-main" type="number" min="0" required></div>
+          <div><label for="new-add" data-i18n-title="field.add.tooltip.new" title="">add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
+          <div><label for="new-eq" data-i18n-title="field.eq.tooltip" title="">eq (talões iguais)</label><select id="new-eq"><option value="Y">Y</option><option value="N">N</option></select></div>
+          <div><label for="new-dest" data-i18n-title="field.dest.tooltip" title="">dest</label><input id="new-dest" type="number" min="0"></div>
         </div>
-        <label class="mt" data-i18n="label.remarks">remarks</label>
+        <label class="mt" for="new-remarks" data-i18n="label.remarks">remarks</label>
         <input id="new-remarks">
         <div class="row mt"><button type="submit" data-i18n="btn.addToDb">Adicionar à base</button></div>
       </form>
@@ -62,9 +64,9 @@
 
     <section class="panel">
       <h2 data-i18n="panel.import.title">Importar</h2>
-      <label data-i18n="label.jsonFile">Ficheiro JSON</label>
+      <label for="import-json-file" data-i18n="label.jsonFile">Ficheiro JSON</label>
       <input type="file" id="import-json-file" accept="application/json">
-      <label class="mt" data-i18n="label.orPasteJson">ou cola JSON (array de PECTABs)</label>
+      <label class="mt" for="import-json-text" data-i18n="label.orPasteJson">ou cola JSON (array de PECTABs)</label>
       <textarea id="import-json-text" rows="4"></textarea>
       <div class="row mt"><button type="button" class="secondary" id="import-json-btn" data-i18n="btn.importJson">Importar / atualizar</button></div>
     </section>
@@ -77,6 +79,7 @@
         Formulários de medição em inglês usam termos diferentes dos campos
         aqui. Equivalências mais comuns:
       </p>
+      <div class="table-wrap">
       <table>
         <thead><tr><th data-i18n="legend.th.form">No teu formulário (inglês)</th><th data-i18n="legend.th.field">Campo aqui</th></tr></thead>
         <tbody>
@@ -90,6 +93,7 @@
           <tr><td data-i18n="legend.row.addChecked">"Additional Stubs" marcado como saindo primeiro</td><td><code>dir = ADD</code></td></tr>
         </tbody>
       </table>
+      </div>
       <p class="empty-state" data-i18n-html="legend.multiValueNote.html">
         Se o formulário listar <strong>mais do que um valor</strong> em
         "Additional Stub(s) length" (ex: "15 &amp; 10") os talões não são
@@ -118,13 +122,13 @@
       </p>
       <form id="match-form">
         <div class="field-grid">
-          <div><label data-i18n-title="field.dir.tooltip" title="">dir</label><select id="phys-dir"><option>PAX</option><option>ADD</option></select></div>
-          <div><label data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="phys-st" type="number" min="0" value="0" required></div>
-          <div><label data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="phys-len" type="number" min="0" required></div>
-          <div><label data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
-          <div><label data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="phys-main" type="number" min="0" required></div>
-          <div><label data-i18n-title="field.add.tooltip.phys" title="">add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
-          <div><label data-i18n="label.tolerance" data-i18n-title="field.tolerance.tooltip" title="">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
+          <div><label for="phys-dir" data-i18n-title="field.dir.tooltip" title="">dir</label><select id="phys-dir"><option>PAX</option><option>ADD</option></select></div>
+          <div><label for="phys-st" data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="phys-st" type="number" min="0" value="0" required></div>
+          <div><label for="phys-len" data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="phys-len" type="number" min="0" required></div>
+          <div><label for="phys-pax" data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
+          <div><label for="phys-main" data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="phys-main" type="number" min="0" required></div>
+          <div><label for="phys-add" data-i18n-title="field.add.tooltip.phys" title="">add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
+          <div><label for="phys-tolerance" data-i18n="label.tolerance" data-i18n-title="field.tolerance.tooltip" title="">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
         </div>
         <div class="row mt">
           <button type="submit" data-i18n="btn.searchMatch">Procurar match</button>
@@ -145,7 +149,7 @@
     <section class="panel">
       <h2 data-i18n="panel.viz.title">Visualizador</h2>
       <div class="row between">
-        <label style="margin:0" data-i18n="label.printOrder">Ordem de impressão</label>
+        <label for="order-toggle" style="margin:0" data-i18n="label.printOrder">Ordem de impressão</label>
         <select id="order-toggle" style="width:auto">
           <option value="" data-i18n="option.auto">automática (por dir)</option>
           <option value="pax-first" data-i18n="option.paxFirst">forçar PAX primeiro</option>
@@ -168,11 +172,11 @@
       <div id="history-wrap"></div>
       <form id="history-form" class="mt" hidden>
         <div class="field-grid">
-          <div><label data-i18n="label.date">Data</label><input id="hist-date" type="date"></div>
-          <div><label data-i18n="label.airport">Aeroporto/handler</label><input id="hist-airport"></div>
-          <div><label data-i18n="label.result">Resultado</label><select id="hist-result"><option value="ok" data-i18n="option.ok">OK</option><option value="fail" data-i18n="option.fail">Falhou</option></select></div>
+          <div><label for="hist-date" data-i18n="label.date">Data</label><input id="hist-date" type="date"></div>
+          <div><label for="hist-airport" data-i18n="label.airport">Aeroporto/handler</label><input id="hist-airport"></div>
+          <div><label for="hist-result" data-i18n="label.result">Resultado</label><select id="hist-result"><option value="ok" data-i18n="option.ok">OK</option><option value="fail" data-i18n="option.fail">Falhou</option></select></div>
         </div>
-        <label class="mt" data-i18n="label.note">Nota</label>
+        <label class="mt" for="hist-note" data-i18n="label.note">Nota</label>
         <input id="hist-note">
         <div class="row mt"><button type="submit" data-i18n="btn.registerTest">Registar teste</button></div>
       </form>

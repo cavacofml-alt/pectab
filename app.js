@@ -39,6 +39,17 @@ function saveHistory(hist) {
   localStorage.setItem(STORAGE_HISTORY, JSON.stringify(hist));
 }
 
+// encapsula guardar + voltar a desenhar, para nenhuma mutação de state.db
+// ficar sem persistir ou sem refletir-se na lista por esquecimento.
+function commitDb() {
+  saveDb(state.db);
+  renderDbList();
+}
+
+function commitHistory() {
+  saveHistory(state.history);
+}
+
 /* ---------- state ---------- */
 const state = {
   db: loadDb(),
@@ -168,13 +179,9 @@ function renderDbList() {
   for (const rec of state.db) {
     const tr = document.createElement("tr");
     tr.className = rec.id === state.selected ? "selected" : "";
+    tr.dataset.id = rec.id;
     const eqBadge = rec.eq === false ? `<span class="badge risky" title="${t("field.eqBadge.title")}">eq=N</span>` : "";
     tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td><td>${eqBadge}</td>`;
-    tr.addEventListener("click", () => {
-      state.selected = rec.id;
-      renderDbList();
-      renderVisualizer();
-    });
     tbody.appendChild(tr);
   }
 }
@@ -195,6 +202,7 @@ function renderResults() {
   for (const r of state.results) {
     const card = document.createElement("div");
     card.className = "result-card" + (r.pectab.id === state.selected ? " active" : "");
+    card.dataset.id = r.pectab.id;
     const deltaItems = ["pax", "main", "add", "len"]
       .map((f) => `<li${r.deltas[f] === 0 ? ' class="ok"' : ""}>${deltaPhrase(f, r.deltas[f])}</li>`)
       .join("");
@@ -207,12 +215,6 @@ function renderResults() {
       <ul class="result-deltas">${deltaItems}</ul>
       ${r.reasons.length ? `<ul class="result-warnings">${r.reasons.map((w) => `<li>${t(w.key, w.params)}</li>`).join("")}</ul>` : ""}
     `;
-    card.addEventListener("click", () => {
-      state.selected = r.pectab.id;
-      renderResults();
-      renderDbList();
-      renderVisualizer();
-    });
     wrap.appendChild(card);
   }
 
@@ -423,7 +425,7 @@ function escapeHtml(s) {
 function addHistoryEntry(pectabId, entry) {
   if (!state.history[pectabId]) state.history[pectabId] = [];
   state.history[pectabId].push(entry);
-  saveHistory(state.history);
+  commitHistory();
 }
 
 /* ---------- compilation request export ---------- */
@@ -470,17 +472,21 @@ function downloadText(filename, text) {
 }
 
 /* ---------- toast ---------- */
-let toastTimer = null;
+// cada chamada empilha um toast novo (em vez de reutilizar sempre a
+// mesma div) — duas ações rápidas seguidas mostram as duas mensagens,
+// não só a última a sobrepor-se à primeira.
 function toast(msg) {
-  let t = document.querySelector(".toast");
-  if (!t) {
-    t = document.createElement("div");
-    t.className = "toast";
-    document.body.appendChild(t);
+  let stack = document.querySelector(".toast-stack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.className = "toast-stack";
+    document.body.appendChild(stack);
   }
-  t.textContent = msg;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.remove(), 3000);
+  const node = document.createElement("div");
+  node.className = "toast";
+  node.textContent = msg;
+  stack.appendChild(node);
+  setTimeout(() => node.remove(), 3000);
 }
 
 /* ---------- importar .docx (formulário de medidas físicas) ---------- */
@@ -719,19 +725,35 @@ function init() {
       return;
     }
     state.db.push(rec);
-    saveDb(state.db);
-    renderDbList();
+    commitDb();
     ev.target.reset();
     toast(t("toast.added", { id: rec.id }));
+  });
+
+  el("db-list-body").addEventListener("click", (ev) => {
+    const tr = ev.target.closest("tr");
+    if (!tr) return;
+    state.selected = tr.dataset.id;
+    renderDbList();
+    renderVisualizer();
+  });
+
+  el("results-wrap").addEventListener("click", (ev) => {
+    const card = ev.target.closest(".result-card");
+    if (!card) return;
+    state.selected = card.dataset.id;
+    renderResults();
+    renderDbList();
+    renderVisualizer();
   });
 
   el("delete-selected").addEventListener("click", () => {
     if (!state.selected) return;
     state.db = state.db.filter((r) => r.id !== state.selected);
     delete state.history[state.selected];
-    saveDb(state.db);
-    saveHistory(state.history);
+    commitHistory();
     state.selected = null;
+    saveDb(state.db);
     renderAll();
   });
 
@@ -743,8 +765,7 @@ function init() {
         added++;
       }
     }
-    saveDb(state.db);
-    renderDbList();
+    commitDb();
     toast(t("toast.loadResult", { label: t(labelKey), added, skipped: recs.length - added }));
   }
 
@@ -765,8 +786,7 @@ function init() {
         else state.db.push(rec);
         added++;
       }
-      saveDb(state.db);
-      renderDbList();
+      commitDb();
       el("import-json-text").value = "";
       toast(t("toast.importedUpdated", { count: added }));
     } catch (e) {
