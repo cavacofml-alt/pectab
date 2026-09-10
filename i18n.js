@@ -110,6 +110,11 @@ const I18N = {
     "score.th.impact": "Impacto",
     "score.final": "Score final: {score}",
 
+    "compare.title": "Com tolerância alargada aparece um candidato diferente",
+    "compare.strict": "Tolerância {tolerance}mm (a tua busca)",
+    "compare.loose": "Tolerância alargada a {tolerance}mm",
+    "compare.applyBtn": "Usar tolerância {tolerance}mm",
+
     "candidates.title": "Outros candidatos",
     "candidates.noneOther": "Não há outros candidatos.",
     "candidates.viewHint": "clica para veres na validação visual",
@@ -323,6 +328,11 @@ const I18N = {
     "score.th.weight": "Weight",
     "score.th.impact": "Impact",
     "score.final": "Final score: {score}",
+
+    "compare.title": "A wider tolerance surfaces a different candidate",
+    "compare.strict": "{tolerance}mm tolerance (your search)",
+    "compare.loose": "Widened to {tolerance}mm tolerance",
+    "compare.applyBtn": "Use {tolerance}mm tolerance",
 
     "candidates.title": "Other candidates",
     "candidates.noneOther": "No other candidates.",

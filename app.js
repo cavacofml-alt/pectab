@@ -6,6 +6,7 @@ const WEIGHTS = { pax: 1.0, main: 1.2, add: 1.5, len: 0.8 };
 const SAFE_THRESHOLD = 90; // score >= isto => "compromisso seguro"
 const RISK_THRESHOLD = 60; // score >= isto => "compromisso arriscado"
 const VIZ_RISK_MM = 3; // desvio de fronteira (mm) a partir do qual o visualizador marca a vermelho
+const EXTENDED_TOLERANCE_MM = 6; // tolerância "alargada" usada para a comparação automática — etiquetas medidas pelo liner vs. pela própria etiqueta podem variar até isto
 
 const STORAGE_DB = "pectab.db";
 const STORAGE_HISTORY = "pectab.history";
@@ -61,6 +62,7 @@ const state = {
   lastPhysical: null,
   orderOverride: null, // null = usa dir do registo selecionado; "pax-first" | "add-first" força
   catalogFilter: { search: "", dir: "" },
+  toleranceCompare: null, // { tolerance, top } quando alargar a tolerância muda o melhor candidato
 };
 
 /* ---------- matching engine ---------- */
@@ -138,7 +140,7 @@ function matchOne(physical, rec) {
   return { hardFail: false, score, classification, deltas, breakdown, reasons };
 }
 
-function runMatching(physical) {
+function computeMatches(physical) {
   const results = [];
   const excluded = [];
   for (const rec of state.db) {
@@ -150,9 +152,28 @@ function runMatching(physical) {
     }
   }
   results.sort((a, b) => b.score - a.score);
+  return { results, excluded };
+}
+
+function runMatching(physical) {
+  const { results, excluded } = computeMatches(physical);
   state.results = results;
   state.excluded = excluded;
   state.lastPhysical = physical;
+
+  // corre uma segunda busca com tolerância alargada (mesma lógica da nota
+  // de campo: liner vs. etiqueta pode dar até 6mm) só para comparação —
+  // não substitui a busca principal, só mostra se valer mesmo a pena
+  // alargar (candidato diferente no topo).
+  const looseTolerance = Math.max(physical.lenTolerance, EXTENDED_TOLERANCE_MM);
+  if (looseTolerance > physical.lenTolerance) {
+    const loose = computeMatches({ ...physical, lenTolerance: looseTolerance });
+    const strictTopId = results[0] ? results[0].pectab.id : null;
+    const looseTopId = loose.results[0] ? loose.results[0].pectab.id : null;
+    state.toleranceCompare = looseTopId && looseTopId !== strictTopId ? { tolerance: looseTolerance, top: loose.results[0] } : null;
+  } else {
+    state.toleranceCompare = null;
+  }
 }
 
 // classificação técnica (exact/safe/risky/recompile) -> decisão operacional
@@ -327,6 +348,35 @@ function renderResults() {
     }
     exWrap.appendChild(ul);
   }
+
+  renderToleranceCompare();
+}
+
+function renderToleranceCompare() {
+  const host = el("tolerance-compare-wrap");
+  if (!host) return;
+  if (!state.toleranceCompare || !state.lastPhysical) {
+    host.innerHTML = "";
+    return;
+  }
+  const strictTop = state.results[0];
+  const { tolerance, top } = state.toleranceCompare;
+  const rowHtml = (labelKey, labelParams, r) => `
+    <div class="tolerance-compare-row">
+      <span class="tolerance-compare-label">${t(labelKey, labelParams)}</span>
+      ${
+        r
+          ? `<span class="id">${r.pectab.id}</span><span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>`
+          : `<span class="empty-state" style="padding:0">${t("results.empty.noCandidates")}</span>`
+      }
+    </div>`;
+  host.innerHTML = `
+    <div class="tolerance-compare">
+      <div class="tolerance-compare-title">${t("compare.title")}</div>
+      ${rowHtml("compare.strict", { tolerance: state.lastPhysical.lenTolerance }, strictTop)}
+      ${rowHtml("compare.loose", { tolerance }, top)}
+      <button type="button" class="ghost" id="apply-loose-tolerance-btn">${t("compare.applyBtn", { tolerance })}</button>
+    </div>`;
 }
 
 function fmtDelta(v) {
@@ -1040,6 +1090,17 @@ function init() {
   });
 
   el("export-compile-btn").addEventListener("click", exportCompilationRequest);
+
+  el("tolerance-compare-wrap").addEventListener("click", (ev) => {
+    if (!ev.target.closest("#apply-loose-tolerance-btn") || !state.toleranceCompare) return;
+    el("phys-tolerance").value = state.toleranceCompare.tolerance;
+    const advancedDetails = document.querySelector("details.advanced");
+    if (advancedDetails) advancedDetails.open = true;
+    const physical = readPhysicalForm();
+    runMatching(physical);
+    if (state.results.length > 0) state.selected = state.results[0].pectab.id;
+    renderAll();
+  });
   el("export-report-btn").addEventListener("click", exportValidationReport);
   el("export-history-csv-btn").addEventListener("click", exportHistoryCsv);
 

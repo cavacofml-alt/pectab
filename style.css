@@ -312,6 +312,20 @@ th { color: var(--muted); font-weight: 600; }
 .score-breakdown table { margin-top: 8px; }
 .score-final { font-weight: 700; margin: 8px 0 0; }
 
+/* ---------- comparação com tolerância alargada ---------- */
+.tolerance-compare {
+  border: 1px solid var(--warn);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  background: rgba(154,103,0,0.06);
+}
+.tolerance-compare-title { font-size: 12px; font-weight: 700; color: var(--warn); margin-bottom: 6px; }
+.tolerance-compare-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12.5px; }
+.tolerance-compare-label { color: var(--muted); min-width: 190px; }
+.tolerance-compare-row .id { font-family: var(--mono); font-weight: 600; }
+.tolerance-compare button { margin-top: 6px; }
+
 /* ---------- lista compacta de outros candidatos ---------- */
 .candidates-title {
   font-size: 11px;
