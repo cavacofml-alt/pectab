@@ -341,7 +341,11 @@ function renderVisualizer() {
   const height = rows * (barH + gapY) + 40;
 
   let y = 20;
-  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+  // width="100%" sem height fixo: o SVG encolhe sempre para caber na
+  // largura do painel (nunca pede scroll horizontal) e a altura
+  // acompanha proporcionalmente — sem distorcer texto, ao contrário de
+  // esticar só o eixo x.
+  let svg = `<svg width="100%" viewBox="0 0 ${width} ${height}" style="display:block">`;
 
   if (physical) {
     svg += renderBar(physSections, marginX, y, pxPerMm, barH, t("viz.row.physical"));
