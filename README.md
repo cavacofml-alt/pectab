@@ -81,6 +81,13 @@ Um PECTAB é um registo com:
   o tamanho individual de cada talão, por isso o visualizador não
   consegue desenhar isso com exatidão; a app mostra um aviso nesse caso)
 - `dest` — nº de destinos que o PECTAB suporta (informativo)
+- `inUse` — booleano opcional, se o PECTAB está atualmente em uso segundo
+  quem gere os PECTABs. Quando `false`, nunca aparece à frente de um
+  candidato ativo na lista (só se não houver nenhum ativo disponível), e
+  mostra sempre um aviso — recomendar um PECTAB descontinuado sem avisar
+  seria pior do que não recomendar nada.
+- `mirrorPoint` — opcional, ponto de dobra da etiqueta em mm (informativo,
+  não usado no matching)
 - `remarks` — texto livre
 
 A "medida física" introduzida no formulário de matching usa exatamente os
@@ -174,46 +181,72 @@ Há dois ficheiros em `data/`:
 - `data/sample-pectabs.json` — **exemplos fictícios** (FRA/P6301/P9201)
   com valores de demonstração, para testar rapidamente o motor de
   matching e o visualizador. Não são dados reais.
-- `data/pectabs.json` — catálogo **real**, gerado a partir de um export
-  DCS (`ADD.txt` + `PAX.txt`, formato descrito no `HELP.txt` desse
-  sistema). 127 registos (58 de `PAX.txt`, 69 de `ADD.txt`). Regenerado
-  com o script em `scripts/parse-pectabs.py` — ver secção seguinte.
+- `data/pectabs.json` — catálogo **real**, 173 registos. Fonte atual:
+  uma folha de cálculo ("bagtag specs") obtida diretamente de quem gere
+  e cria os PECTABs — mais rica e mais atual do que o export bruto do
+  DCS (`ADD.txt`/`PAX.txt`) usado antes. Regenerado com
+  `scripts/parse-bagtag-specs-xlsx.py` — ver secção seguinte.
 
-Achados ao gerar o catálogo, só a partir do parsing (sem nenhuma medida
-física envolvida):
+Esta fonte trouxe campos que o export do DCS não tinha:
 
-- **76 dos 127 PECTABs (60%) têm `len` declarado diferente da soma
-  `pax + main + st*add`**, com desvios entre -19mm e +45mm. Isto confirma
-  que o problema "len não bate com a soma das secções" não é um caso
-  isolado neste sistema — é a norma, não a exceção.
-- `P8101` tem todos os campos de medida a zero (`len=main=add=pax=0`) —
-  parece um registo placeholder/não configurado, não uma etiqueta real.
-- 10 registos têm `eq=N` (talões adicionais de tamanhos diferentes):
-  `P3101, P3102, P7701-P7704, P7801-P7804`.
-- O campo `remarks` no export real é quase sempre só `N` (uma vez `Y`),
-  nunca texto descritivo — ao contrário do exemplo no `HELP.txt`
-  (`"barcodes outside"`). Provavelmente é um flag "tem observações
-  noutro sítio", não o texto em si; foi importado tal e qual.
+- **`inUse`** — se o PECTAB está atualmente em uso. 17 dos 173 estão
+  marcados `false` (descontinuados/substituídos). A app nunca deixa um
+  destes aparecer à frente de um candidato ativo, e mostra sempre um
+  aviso quando aparece (só quando não há nenhum ativo disponível).
+- **`remarks`** com contexto real de quem os criou — nome de
+  companhia/aeroporto, avisos tipo "AYT specific, do not change!!" ou
+  "HARDCODED NEOS", motivo de layouts especiais. Ao contrário do export
+  do DCS (onde `remarks` era quase sempre só um `N`/`Y` sem texto), aqui
+  é texto explicativo real — importado tal e qual, sem filtrar.
+- **`mirrorPoint`** — ponto de dobra da etiqueta (só informativo).
+
+Comparando com o catálogo antigo (127 registos, do `ADD.txt`/`PAX.txt`):
+todos os 127 IDs existem também nesta fonte, mais 49 que não estavam no
+export do DCS. 5 registos têm valores diferentes entre as duas fontes —
+por exemplo `P5801`, que o DCS ainda listava com a configuração antiga
+(`st=3`) mas que a folha de quem o gere diz explicitamente ter sido
+reconfigurado para "NO STUBS (EEZY tags kiosk)". Nestes 5 casos, esta
+fonte (mais recente, com contexto humano) prevaleceu. `P8101` (que no
+catálogo antigo aparecia com todos os valores a zero, um placeholder)
+não está incluído — a folha confirma que é mesmo um slot vazio
+("temp dnata", sem configuração), não uma etiqueta real.
 
 Botões na app: "Carregar catálogo (ADD+PAX)" carrega `data/pectabs.json`;
 "Carregar exemplo fictício" carrega `data/sample-pectabs.json`. O botão
 "Importar JSON" aceita qualquer array de registos no formato acima,
 colado ou por ficheiro.
 
-## Regenerar o catálogo a partir de novos exports
+## Regenerar o catálogo a partir de novos dados
 
-`scripts/parse-pectabs.py` lê os dois ficheiros de texto de largura fixa
-(`pectab dir st len main add eq pax dest remarks`, um registo por linha,
-campos separados por espaço, `remarks` livre até ao fim da linha) e
-produz o JSON em `data/pectabs.json`:
+Fonte atual (folha de cálculo "bagtag specs", uma aba chamada
+`bagtag specs` com as colunas `Pectabnr, orientation, nr of additional
+stubs, total tag length, Length of main tagpart, length of one
+additional stub, additional stubs are all same size, length of pax
+stub, limiting features, Currently in use, limiting, remarks,
+Mirrorpoint`):
+
+```
+python3 scripts/parse-bagtag-specs-xlsx.py caminho/bagtag-specs.xlsx \
+  --dest-source data/pectabs.json > data/pectabs.json.new
+mv data/pectabs.json.new data/pectabs.json
+```
+
+`--dest-source` é opcional — aponta para o `data/pectabs.json` atual só
+para copiar o campo `dest` (que esta folha não tem) para os IDs que já
+existiam. Sem essa flag, `dest` fica de fora para todos.
+
+Se só tiveres o export bruto do DCS (`ADD.txt`/`PAX.txt`, sem o `inUse`/
+`remarks` ricos), `scripts/parse-pectabs.py` continua a funcionar como
+alternativa — lê os dois ficheiros de texto de largura fixa (`pectab dir
+st len main add eq pax dest remarks`, um registo por linha) e produz o
+mesmo formato de JSON:
 
 ```
 python3 scripts/parse-pectabs.py caminho/PAX.txt caminho/ADD.txt > data/pectabs.json
 ```
 
-Imprime avisos em stderr para linhas mal formadas, IDs duplicados entre
-os dois ficheiros, e um resumo dos casos `len=0` / `eq=N` / `len != soma`
-encontrados.
+Ambos os scripts imprimem avisos em stderr para linhas mal formadas,
+IDs duplicados, e um resumo dos casos a confirmar.
 
 Depois de mudar `data/pectabs.json` ou `data/sample-pectabs.json`,
 **corre também** `scripts/build-data-js.py` para regenerar `data.js` —

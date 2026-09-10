@@ -74,6 +74,8 @@ const I18N = {
     "field.dest.tooltip": "Nº de destinos que este PECTAB suporta (informativo)",
     "field.tolerance.tooltip": "Não vem do teu formulário — é só desta ferramenta. Quantos mm de diferença no len ainda são aceites antes de excluir um candidato. 0 = exige igual.",
     "field.eqBadge.title": "talões não são todos iguais",
+    "field.notInUseBadge.title": "marcado como não estando atualmente em uso",
+    "badge.notInUse": "fora de uso",
     "field.dir.label": "Direção de impressão",
     "option.dirPax": "PAX primeiro",
     "option.dirAdd": "ADD primeiro",
@@ -165,6 +167,7 @@ const I18N = {
     "warn.lenSum": "O len declarado deste PECTAB ({len}mm) não bate com a soma das suas secções ({sum}mm) — {diff}mm de inconsistência já no próprio registo, antes de comparar com a tua medida.",
     "warn.eqN": 'Este PECTAB tem talões de tamanhos diferentes (eq=N) — o valor "add" acima é só uma referência nominal, não representa cada talão.',
     "warn.addMisalign": "O talão (add) desvia {delta}mm — como se repete em {st} talões, o desalinhamento acumula: o último talão pode ficar {worst}mm fora do sítio. Visto em campo: talão sem imprimir e 2º/3º talão desalinhados. Nunca classificado como seguro só por causa disto — testa fisicamente antes de usar em produção.",
+    "warn.notInUse": "Este PECTAB está marcado como não estando atualmente em uso, segundo quem gere os PECTABs — pode estar desatualizado ou ter sido substituído. Só aparece à frente de candidatos ativos se não houver nenhum disponível. Confirma antes de usar.",
 
     "results.empty.noSearch": 'Introduz as medidas físicas e clica em "Procurar match" para veres candidatos.',
     "results.empty.noCandidates": 'Nenhum candidato passou os filtros de exclusão. Ver secção "Excluídos" abaixo, ou exporta um pedido de compilação nova.',
@@ -293,6 +296,8 @@ const I18N = {
     "field.dest.tooltip": "Number of destinations this PECTAB supports (informational)",
     "field.tolerance.tooltip": "Not on your form — this is a setting of the tool itself. How many mm of len difference are still accepted before excluding a candidate. 0 = requires an exact match.",
     "field.eqBadge.title": "stubs are not all the same size",
+    "field.notInUseBadge.title": "marked as not currently in use",
+    "badge.notInUse": "not in use",
     "field.dir.label": "Print direction",
     "option.dirPax": "PAX first",
     "option.dirAdd": "ADD first",
@@ -384,6 +389,7 @@ const I18N = {
     "warn.lenSum": "This PECTAB's declared len ({len}mm) doesn't match the sum of its sections ({sum}mm) — {diff}mm of inconsistency already in the record itself, before comparing to your measurement.",
     "warn.eqN": 'This PECTAB has additional stubs of different sizes (eq=N) — the "add" value above is only a nominal reference, not each individual stub.',
     "warn.addMisalign": "The stub (add) deviates {delta}mm — since it repeats over {st} stubs, the misalignment compounds: the last stub can end up {worst}mm off. Seen in the field: a stub not printing at all, and the 2nd/3rd stub misaligned. Never classified as safe just from a small add mismatch — test physically before using in production.",
+    "warn.notInUse": "This PECTAB is marked as not currently in use by whoever manages the PECTABs — it may be outdated or have been replaced. Only ranks above active candidates when none are available. Confirm before using.",
 
     "results.empty.noSearch": 'Enter the physical measurements and click "Search match" to see candidates.',
     "results.empty.noCandidates": 'No candidate passed the exclusion filters. See the "Excluded" section below, or export a new compilation request.',

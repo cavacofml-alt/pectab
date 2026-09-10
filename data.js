@@ -12,8 +12,10 @@ const PECTAB_CATALOG = [
     "main": 305,
     "add": 12,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "shared muc/puj <> paxstub size",
+    "mirrorPoint": 210.5
   },
   {
     "id": "P0102",
@@ -24,8 +26,23 @@ const PECTAB_CATALOG = [
     "main": 305,
     "add": 12,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "shared muc/puj <> paxstub size — as 0101 but with airline PNR",
+    "mirrorPoint": 210.5
+  },
+  {
+    "id": "P0201",
+    "dir": "PAX",
+    "st": 0,
+    "len": 400,
+    "pax": 55,
+    "main": 345,
+    "add": 0,
+    "eq": false,
+    "inUse": true,
+    "remarks": "lelijk!!!",
+    "mirrorPoint": 227.5
   },
   {
     "id": "P0301",
@@ -36,8 +53,72 @@ const PECTAB_CATALOG = [
     "main": 297,
     "add": 12,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "lelijk"
+  },
+  {
+    "id": "P0401",
+    "dir": "PAX",
+    "st": 2,
+    "len": 400,
+    "pax": 55,
+    "main": 320,
+    "add": 12,
+    "eq": true,
+    "inUse": true,
+    "mirrorPoint": 215
+  },
+  {
+    "id": "P0402",
+    "dir": "PAX",
+    "st": 2,
+    "len": 432,
+    "pax": 55,
+    "main": 353,
+    "add": 12,
+    "eq": true,
+    "inUse": true,
+    "mirrorPoint": 231.5
+  },
+  {
+    "id": "P0403",
+    "dir": "PAX",
+    "st": 2,
+    "len": 400,
+    "pax": 55,
+    "main": 320,
+    "add": 12,
+    "eq": true,
+    "inUse": true,
+    "remarks": "barcode on inside — FH at AYT",
+    "mirrorPoint": 215
+  },
+  {
+    "id": "P0404",
+    "dir": "PAX",
+    "st": 2,
+    "len": 400,
+    "pax": 55,
+    "main": 320,
+    "add": 12,
+    "eq": true,
+    "inUse": true,
+    "remarks": "AYT specific, do not change !!",
+    "mirrorPoint": 215
+  },
+  {
+    "id": "P0405",
+    "dir": "PAX",
+    "st": 2,
+    "len": 400,
+    "pax": 55,
+    "main": 320,
+    "add": 12,
+    "eq": true,
+    "inUse": true,
+    "remarks": "stubs 5mm lower",
+    "mirrorPoint": 215
   },
   {
     "id": "P0501",
@@ -48,8 +129,9 @@ const PECTAB_CATALOG = [
     "main": 380,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 245
   },
   {
     "id": "P0502",
@@ -60,8 +142,10 @@ const PECTAB_CATALOG = [
     "main": 380,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "as 0501, but start minus 5 mm",
+    "mirrorPoint": 245
   },
   {
     "id": "P0503",
@@ -72,8 +156,10 @@ const PECTAB_CATALOG = [
     "main": 380,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "as 0501, but stubs plus 5 mm",
+    "mirrorPoint": 245
   },
   {
     "id": "P0601",
@@ -84,8 +170,8 @@ const PECTAB_CATALOG = [
     "main": 315,
     "add": 11,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P0701",
@@ -96,8 +182,8 @@ const PECTAB_CATALOG = [
     "main": 378,
     "add": 14,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": false,
+    "dest": 3
   },
   {
     "id": "P0702",
@@ -108,8 +194,9 @@ const PECTAB_CATALOG = [
     "main": 350,
     "add": 20,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "23/20/20"
   },
   {
     "id": "P0801",
@@ -120,8 +207,20 @@ const PECTAB_CATALOG = [
     "main": 353,
     "add": 14,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
+  },
+  {
+    "id": "P0901",
+    "dir": "PAX",
+    "st": 0,
+    "len": 395,
+    "pax": 55,
+    "main": 340,
+    "add": 0,
+    "eq": false,
+    "inUse": true,
+    "mirrorPoint": 225
   },
   {
     "id": "P1001",
@@ -132,8 +231,8 @@ const PECTAB_CATALOG = [
     "main": 318,
     "add": 11,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P1101",
@@ -144,8 +243,22 @@ const PECTAB_CATALOG = [
     "main": 391,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 240.5
+  },
+  {
+    "id": "P1201",
+    "dir": "PAX",
+    "st": 2,
+    "len": 507,
+    "pax": 70,
+    "main": 406,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "barcodes outside",
+    "mirrorPoint": 273
   },
   {
     "id": "P1301",
@@ -156,8 +269,8 @@ const PECTAB_CATALOG = [
     "main": 400,
     "add": 15,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P1401",
@@ -168,8 +281,9 @@ const PECTAB_CATALOG = [
     "main": 384,
     "add": 20,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on main part"
   },
   {
     "id": "P1501",
@@ -180,8 +294,8 @@ const PECTAB_CATALOG = [
     "main": 372,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P1601",
@@ -192,8 +306,34 @@ const PECTAB_CATALOG = [
     "main": 387,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
+  },
+  {
+    "id": "P1701",
+    "dir": "PAX",
+    "st": 2,
+    "len": 502,
+    "pax": 69,
+    "main": 402,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "barcodes inside",
+    "mirrorPoint": 270
+  },
+  {
+    "id": "P1702",
+    "dir": "PAX",
+    "st": 2,
+    "len": 502,
+    "pax": 69,
+    "main": 402,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "stubs lower — barcodes inside",
+    "mirrorPoint": 270
   },
   {
     "id": "P1801",
@@ -204,8 +344,9 @@ const PECTAB_CATALOG = [
     "main": 375,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on middle pax stub"
   },
   {
     "id": "P1802",
@@ -216,8 +357,9 @@ const PECTAB_CATALOG = [
     "main": 375,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on top pax stub — (Pus)"
   },
   {
     "id": "P1901",
@@ -228,8 +370,10 @@ const PECTAB_CATALOG = [
     "main": 369,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes on outside",
+    "mirrorPoint": 249.5
   },
   {
     "id": "P1902",
@@ -240,8 +384,10 @@ const PECTAB_CATALOG = [
     "main": 369,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes on outside — stubs 6mm verder geprint",
+    "mirrorPoint": 249.5
   },
   {
     "id": "P1903",
@@ -252,8 +398,10 @@ const PECTAB_CATALOG = [
     "main": 369,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes on outside — IZ (arkia)logo in midden",
+    "mirrorPoint": 244.5
   },
   {
     "id": "P2101",
@@ -264,8 +412,8 @@ const PECTAB_CATALOG = [
     "main": 370,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P2102",
@@ -276,8 +424,8 @@ const PECTAB_CATALOG = [
     "main": 370,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P2103",
@@ -288,8 +436,9 @@ const PECTAB_CATALOG = [
     "main": 370,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "paxstub + 2 stubs + 1 aan de andere kant — NO in NKG"
   },
   {
     "id": "P2104",
@@ -300,8 +449,9 @@ const PECTAB_CATALOG = [
     "main": 370,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "HARDCODED NEOS — LRM"
   },
   {
     "id": "P2105",
@@ -312,8 +462,9 @@ const PECTAB_CATALOG = [
     "main": 384,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "Y"
+    "remarks": "RFID PKX"
   },
   {
     "id": "P2106",
@@ -324,8 +475,9 @@ const PECTAB_CATALOG = [
     "main": 349,
     "add": 25,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "paxstub + 2 stubs + 1 aan de andere kant — PVG"
   },
   {
     "id": "P2107",
@@ -336,8 +488,9 @@ const PECTAB_CATALOG = [
     "main": 384,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "Y"
+    "remarks": "RFID PKX?"
   },
   {
     "id": "P2108",
@@ -348,8 +501,9 @@ const PECTAB_CATALOG = [
     "main": 384,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "as 2105 but without rfid"
   },
   {
     "id": "P2201",
@@ -360,8 +514,9 @@ const PECTAB_CATALOG = [
     "main": 378,
     "add": 24,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on main part and pax stub"
   },
   {
     "id": "P2202",
@@ -372,8 +527,9 @@ const PECTAB_CATALOG = [
     "main": 378,
     "add": 24,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on main part and pax stub — SSSS for neos"
   },
   {
     "id": "P2301",
@@ -384,8 +540,8 @@ const PECTAB_CATALOG = [
     "main": 385,
     "add": 24,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P2401",
@@ -396,8 +552,9 @@ const PECTAB_CATALOG = [
     "main": 377,
     "add": 24,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 245.5
   },
   {
     "id": "P2501",
@@ -408,8 +565,10 @@ const PECTAB_CATALOG = [
     "main": 313,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on main part and pax stub — no pax stub",
+    "mirrorPoint": 206.5
   },
   {
     "id": "P2601",
@@ -420,8 +579,9 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "res2 default"
   },
   {
     "id": "P2602",
@@ -432,8 +592,9 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "res2 default barcode and tagnr lower on stubs"
   },
   {
     "id": "P2603",
@@ -444,8 +605,9 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "as 2602 but with class on tag — not used"
   },
   {
     "id": "P2604",
@@ -456,8 +618,9 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes outside — for FAO/LS"
   },
   {
     "id": "P2701",
@@ -468,8 +631,9 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 205
   },
   {
     "id": "P2702",
@@ -480,8 +644,10 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "KIV specific 2701 plus",
+    "mirrorPoint": 205
   },
   {
     "id": "P2703",
@@ -492,8 +658,10 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "2701 minus",
+    "mirrorPoint": 205
   },
   {
     "id": "P2704",
@@ -504,8 +672,58 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "Y"
+    "remarks": "barcodes outside — RFID MFM",
+    "mirrorPoint": 205
+  },
+  {
+    "id": "P2801",
+    "dir": "ADD",
+    "st": 2,
+    "len": 500,
+    "pax": 38,
+    "main": 440,
+    "add": 11,
+    "eq": true,
+    "inUse": true,
+    "remarks": "max 1 onwards op stubs — DJE (paxstub 34) — adjusted for etz, 5sep"
+  },
+  {
+    "id": "P2802",
+    "dir": "ADD",
+    "st": 2,
+    "len": 385,
+    "pax": 60,
+    "main": 305,
+    "add": 10,
+    "eq": true,
+    "inUse": true,
+    "remarks": "max 1 onwards op stubs — FHY(freebird) ECN/HTY"
+  },
+  {
+    "id": "P2803",
+    "dir": "ADD",
+    "st": 2,
+    "len": 500,
+    "pax": 38,
+    "main": 440,
+    "add": 11,
+    "eq": true,
+    "inUse": true,
+    "remarks": "max 1 onwards op stubs — PIS (paxstub 34) — real"
+  },
+  {
+    "id": "P2804",
+    "dir": "ADD",
+    "st": 2,
+    "len": 500,
+    "pax": 38,
+    "main": 440,
+    "add": 11,
+    "eq": true,
+    "inUse": true,
+    "remarks": "max 1 onwards op stubs — MIR — Stub + 5"
   },
   {
     "id": "P2901",
@@ -516,8 +734,8 @@ const PECTAB_CATALOG = [
     "main": 421,
     "add": 12,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P3001",
@@ -528,8 +746,9 @@ const PECTAB_CATALOG = [
     "main": 322,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on main part — paxstub +6"
   },
   {
     "id": "P3101",
@@ -540,8 +759,9 @@ const PECTAB_CATALOG = [
     "main": 375,
     "add": 10,
     "eq": false,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "10/10/15"
   },
   {
     "id": "P3102",
@@ -552,8 +772,9 @@ const PECTAB_CATALOG = [
     "main": 375,
     "add": 10,
     "eq": false,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "like 3101 but with pnr — 10/10/15"
   },
   {
     "id": "P3201",
@@ -564,8 +785,9 @@ const PECTAB_CATALOG = [
     "main": 407,
     "add": 19,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on paxstub"
   },
   {
     "id": "P3301",
@@ -576,8 +798,8 @@ const PECTAB_CATALOG = [
     "main": 420,
     "add": 13,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P3401",
@@ -588,20 +810,23 @@ const PECTAB_CATALOG = [
     "main": 300,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 199
   },
   {
     "id": "P3402",
     "dir": "PAX",
     "st": 3,
-    "len": 400,
+    "len": 401,
     "pax": 45,
     "main": 296,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes outside — play ams",
+    "mirrorPoint": 196
   },
   {
     "id": "P3501",
@@ -612,8 +837,8 @@ const PECTAB_CATALOG = [
     "main": 331,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P3601",
@@ -624,8 +849,8 @@ const PECTAB_CATALOG = [
     "main": 428,
     "add": 16,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P3602",
@@ -636,8 +861,9 @@ const PECTAB_CATALOG = [
     "main": 429,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "Y"
+    "remarks": "GOH — RFID elem 1 and 2"
   },
   {
     "id": "P3701",
@@ -648,8 +874,8 @@ const PECTAB_CATALOG = [
     "main": 318,
     "add": 12,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P3702",
@@ -660,8 +886,9 @@ const PECTAB_CATALOG = [
     "main": 318,
     "add": 12,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "SSSS for neos"
   },
   {
     "id": "P3801",
@@ -672,8 +899,33 @@ const PECTAB_CATALOG = [
     "main": 390,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 243
+  },
+  {
+    "id": "P3901",
+    "dir": "PAX",
+    "st": 2,
+    "len": 474,
+    "pax": 44,
+    "main": 390,
+    "add": 19,
+    "eq": true,
+    "inUse": true,
+    "mirrorPoint": 239
+  },
+  {
+    "id": "P3902",
+    "dir": "PAX",
+    "st": 2,
+    "len": 482,
+    "pax": 50,
+    "main": 392,
+    "add": 20,
+    "eq": true,
+    "inUse": true,
+    "mirrorPoint": 246
   },
   {
     "id": "P4001",
@@ -684,8 +936,8 @@ const PECTAB_CATALOG = [
     "main": 284,
     "add": 18,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P4101",
@@ -696,8 +948,9 @@ const PECTAB_CATALOG = [
     "main": 425,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "nog finetunen"
   },
   {
     "id": "P4102",
@@ -708,8 +961,9 @@ const PECTAB_CATALOG = [
     "main": 425,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "CFR - barcodes outside"
   },
   {
     "id": "P4201",
@@ -720,8 +974,8 @@ const PECTAB_CATALOG = [
     "main": 294,
     "add": 15,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P4301",
@@ -732,8 +986,9 @@ const PECTAB_CATALOG = [
     "main": 402,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "mirrorPoint": 263
   },
   {
     "id": "P4302",
@@ -744,8 +999,10 @@ const PECTAB_CATALOG = [
     "main": 402,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "stubs 11mm verder — for ls in spain",
+    "mirrorPoint": 263
   },
   {
     "id": "P4303",
@@ -756,8 +1013,10 @@ const PECTAB_CATALOG = [
     "main": 402,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "stubs 11mm verder - barcodes outside — for ls in spain",
+    "mirrorPoint": 263
   },
   {
     "id": "P4401",
@@ -768,8 +1027,44 @@ const PECTAB_CATALOG = [
     "main": 401,
     "add": 15,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
+  },
+  {
+    "id": "P4501",
+    "dir": "PAX",
+    "st": 2,
+    "len": 400,
+    "pax": 67,
+    "main": 311,
+    "add": 11,
+    "eq": true,
+    "inUse": true,
+    "mirrorPoint": 222.5
+  },
+  {
+    "id": "P4502",
+    "dir": "PAX",
+    "st": 2,
+    "len": 406,
+    "pax": 45,
+    "main": 311,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "mirrorPoint": 212
+  },
+  {
+    "id": "P4601",
+    "dir": "ADD",
+    "st": 1,
+    "len": 403,
+    "pax": 63,
+    "main": 308,
+    "add": 29,
+    "eq": false,
+    "inUse": true,
+    "remarks": "single stub — (temp in use in SFB)"
   },
   {
     "id": "P4701",
@@ -780,8 +1075,69 @@ const PECTAB_CATALOG = [
     "main": 425,
     "add": 16,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "new for SFB (jan16)"
+  },
+  {
+    "id": "P4702",
+    "dir": "ADD",
+    "st": 3,
+    "len": 533,
+    "pax": 49,
+    "main": 425,
+    "add": 10,
+    "eq": false,
+    "inUse": false,
+    "remarks": "first stub is 23 — jet2 4 stubs design"
+  },
+  {
+    "id": "P4703",
+    "dir": "ADD",
+    "st": 3,
+    "len": 533,
+    "pax": 60,
+    "main": 382,
+    "add": 20,
+    "eq": false,
+    "inUse": false,
+    "remarks": "with extra stub is 30 on pax stub side — RFID"
+  },
+  {
+    "id": "P4704",
+    "dir": "ADD",
+    "st": 3,
+    "len": 533,
+    "pax": 60,
+    "main": 382,
+    "add": 20,
+    "eq": false,
+    "inUse": false,
+    "remarks": "with extra stub is 30 on pax stub side"
+  },
+  {
+    "id": "P4705",
+    "dir": "ADD",
+    "st": 3,
+    "len": 482,
+    "pax": 60,
+    "main": 382,
+    "add": 20,
+    "eq": false,
+    "inUse": false,
+    "remarks": "layout pax/add/add/main/add — TFU (no RFID!!!)"
+  },
+  {
+    "id": "P4706",
+    "dir": "ADD",
+    "st": 3,
+    "len": 482,
+    "pax": 56,
+    "main": 360,
+    "add": 20,
+    "eq": false,
+    "inUse": false,
+    "remarks": "layout pax/add/add/main/add — (RFID) not used"
   },
   {
     "id": "P4801",
@@ -792,8 +1148,10 @@ const PECTAB_CATALOG = [
     "main": 435,
     "add": 16,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "wow kef kiosk",
+    "mirrorPoint": 268.5
   },
   {
     "id": "P4901",
@@ -804,8 +1162,46 @@ const PECTAB_CATALOG = [
     "main": 393,
     "add": 15,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "wow kef terminal",
+    "mirrorPoint": 266.5
+  },
+  {
+    "id": "P5001",
+    "dir": "ADD",
+    "st": 2,
+    "len": 507,
+    "pax": 63,
+    "main": 408,
+    "add": 16,
+    "eq": false,
+    "inUse": true,
+    "remarks": "second stub is 20mm — BAGS (thailand)"
+  },
+  {
+    "id": "P5002",
+    "dir": "ADD",
+    "st": 2,
+    "len": 507,
+    "pax": 63,
+    "main": 408,
+    "add": 16,
+    "eq": false,
+    "inUse": true,
+    "remarks": "second stub is 20mm — speciaal voor GRQ"
+  },
+  {
+    "id": "P5003",
+    "dir": "ADD",
+    "st": 2,
+    "len": 457,
+    "pax": 66,
+    "main": 360,
+    "add": 16,
+    "eq": false,
+    "inUse": true,
+    "remarks": "BKK/C6"
   },
   {
     "id": "P5101",
@@ -816,8 +1212,9 @@ const PECTAB_CATALOG = [
     "main": 390,
     "add": 15,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "FAO reverse"
   },
   {
     "id": "P5102",
@@ -828,8 +1225,43 @@ const PECTAB_CATALOG = [
     "main": 390,
     "add": 15,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "printing the pax stub 10mm late — FAO reverse"
+  },
+  {
+    "id": "P5201",
+    "dir": "ADD",
+    "st": 2,
+    "len": 470,
+    "pax": 50,
+    "main": 432,
+    "add": 19,
+    "eq": true,
+    "inUse": true
+  },
+  {
+    "id": "P5301",
+    "dir": "ADD",
+    "st": 2,
+    "len": 406,
+    "pax": 63,
+    "main": 394,
+    "add": 22,
+    "eq": true,
+    "inUse": true
+  },
+  {
+    "id": "P5401",
+    "dir": "ADD",
+    "st": 1,
+    "len": 350,
+    "pax": 20,
+    "main": 299,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "no onwards on paxstub"
   },
   {
     "id": "P5501",
@@ -840,8 +1272,9 @@ const PECTAB_CATALOG = [
     "main": 460,
     "add": 13,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "geen barcode op add. Stub"
   },
   {
     "id": "P5601",
@@ -852,8 +1285,8 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 15,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P5602",
@@ -864,8 +1297,9 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "with logos — TPE"
   },
   {
     "id": "P5603",
@@ -876,8 +1310,10 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "geen pax stub — INK kiosk",
+    "mirrorPoint": 226
   },
   {
     "id": "P5701",
@@ -888,20 +1324,23 @@ const PECTAB_CATALOG = [
     "main": 431,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "ier kiosks (barcodes outside) — ier kiosks"
   },
   {
     "id": "P5801",
     "dir": "PAX",
-    "st": 3,
+    "st": 0,
     "len": 430,
-    "pax": 60,
-    "main": 310,
-    "add": 20,
+    "pax": 0,
+    "main": 430,
+    "add": 0,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "FMO (afwijkende barcodes) — NO STUBS  (EEZY tags kiosk)",
+    "mirrorPoint": 220
   },
   {
     "id": "P5802",
@@ -912,8 +1351,9 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "station ECN (correndon koffers)"
   },
   {
     "id": "P5805",
@@ -924,8 +1364,10 @@ const PECTAB_CATALOG = [
     "main": 307,
     "add": 13,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "PQ/PED",
+    "mirrorPoint": 213
   },
   {
     "id": "P5901",
@@ -936,8 +1378,9 @@ const PECTAB_CATALOG = [
     "main": 393,
     "add": 15,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "mia specific copy of 4901 because they are incompetent"
   },
   {
     "id": "P6001",
@@ -948,8 +1391,10 @@ const PECTAB_CATALOG = [
     "main": 388,
     "add": 24,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo on main tag and stub",
+    "mirrorPoint": 254
   },
   {
     "id": "P6101",
@@ -960,8 +1405,9 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "zia (mirror of 5601)"
   },
   {
     "id": "P6102",
@@ -972,8 +1418,9 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logos — OLB"
   },
   {
     "id": "P6201",
@@ -984,8 +1431,9 @@ const PECTAB_CATALOG = [
     "main": 349,
     "add": 13,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "pkb"
   },
   {
     "id": "P6301",
@@ -996,8 +1444,33 @@ const PECTAB_CATALOG = [
     "main": 360,
     "add": 10,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "max 1 onwards op stubs / logos"
+  },
+  {
+    "id": "P6401",
+    "dir": "PAX",
+    "st": 0,
+    "len": 400,
+    "pax": 60,
+    "main": 340,
+    "add": 0,
+    "eq": true,
+    "inUse": true,
+    "remarks": "no add stubs — SJJ"
+  },
+  {
+    "id": "P6402",
+    "dir": "PAX",
+    "st": 0,
+    "len": 400,
+    "pax": 60,
+    "main": 340,
+    "add": 0,
+    "eq": true,
+    "inUse": true,
+    "remarks": "no add stubs — SCN"
   },
   {
     "id": "P6501",
@@ -1008,8 +1481,9 @@ const PECTAB_CATALOG = [
     "main": 370,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "TLV"
   },
   {
     "id": "P6502",
@@ -1020,8 +1494,9 @@ const PECTAB_CATALOG = [
     "main": 413,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "BUD"
   },
   {
     "id": "P6503",
@@ -1032,8 +1507,68 @@ const PECTAB_CATALOG = [
     "main": 400,
     "add": 14,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
+  },
+  {
+    "id": "P6601",
+    "dir": "PAX",
+    "st": 2,
+    "len": 506,
+    "pax": 70,
+    "main": 407,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "barcodes outside"
+  },
+  {
+    "id": "P6602",
+    "dir": "PAX",
+    "st": 2,
+    "len": 506,
+    "pax": 70,
+    "main": 407,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "als 6601, add stub 5 mm verder — barcodes outside"
+  },
+  {
+    "id": "P6603",
+    "dir": "PAX",
+    "st": 2,
+    "len": 506,
+    "pax": 64,
+    "main": 401,
+    "add": 20,
+    "eq": true,
+    "inUse": true,
+    "remarks": "20/23 — barcodes outside"
+  },
+  {
+    "id": "P6604",
+    "dir": "PAX",
+    "st": 2,
+    "len": 533,
+    "pax": 70,
+    "main": 433,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "20/23 — barcodes outside"
+  },
+  {
+    "id": "P6606",
+    "dir": "PAX",
+    "st": 2,
+    "len": 506,
+    "pax": 70,
+    "main": 407,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "als 6602, add stub nog 5 mm verder — barcodes outside"
   },
   {
     "id": "P6701",
@@ -1044,8 +1579,8 @@ const PECTAB_CATALOG = [
     "main": 389,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P6702",
@@ -1056,8 +1591,9 @@ const PECTAB_CATALOG = [
     "main": 374,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "FHY"
   },
   {
     "id": "P6801",
@@ -1068,8 +1604,53 @@ const PECTAB_CATALOG = [
     "main": 353,
     "add": 14,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "als 0801 maar met bcnnummer op additional stubs"
+  },
+  {
+    "id": "P6901",
+    "dir": "ADD",
+    "st": 2,
+    "len": 509,
+    "pax": 65,
+    "main": 404,
+    "add": 20,
+    "inUse": true
+  },
+  {
+    "id": "P6902",
+    "dir": "ADD",
+    "st": 2,
+    "len": 519,
+    "pax": 65,
+    "main": 414,
+    "add": 20,
+    "inUse": true
+  },
+  {
+    "id": "P7001",
+    "dir": "PAX",
+    "st": 2,
+    "len": 507,
+    "pax": 70,
+    "main": 406,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "1201 equivalent, 5 destinations"
+  },
+  {
+    "id": "P7101",
+    "dir": "PAX",
+    "st": 0,
+    "len": 400,
+    "pax": 60,
+    "main": 340,
+    "add": 0,
+    "eq": true,
+    "inUse": true,
+    "remarks": "no add stubs, 5 destinations!!!! — SJJ"
   },
   {
     "id": "P7201",
@@ -1080,8 +1661,9 @@ const PECTAB_CATALOG = [
     "main": 400,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 5,
-    "remarks": "N"
+    "remarks": "5 destinations, 1301 equivalent — SKP,TIA"
   },
   {
     "id": "P7301",
@@ -1093,7 +1675,7 @@ const PECTAB_CATALOG = [
     "add": 15,
     "eq": true,
     "dest": 5,
-    "remarks": "N"
+    "remarks": "5 destinations — SJJ (5 dest new)"
   },
   {
     "id": "P7401",
@@ -1104,8 +1686,10 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "geen pax stub — INK kiosk",
+    "mirrorPoint": 226
   },
   {
     "id": "P7402",
@@ -1116,8 +1700,10 @@ const PECTAB_CATALOG = [
     "main": 290,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "only 1 flights supported — Jet2",
+    "mirrorPoint": 226
   },
   {
     "id": "P7501",
@@ -1127,9 +1713,9 @@ const PECTAB_CATALOG = [
     "pax": 57,
     "main": 429,
     "add": 16,
-    "eq": true,
+    "eq": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "16/16/16 (barcodes outside) — (voormalig mst)"
   },
   {
     "id": "P7601",
@@ -1140,8 +1726,9 @@ const PECTAB_CATALOG = [
     "main": 440,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "ICN QV"
   },
   {
     "id": "P7701",
@@ -1152,8 +1739,9 @@ const PECTAB_CATALOG = [
     "main": 373,
     "add": 20,
     "eq": false,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "20/20/29  / logos — Peach"
   },
   {
     "id": "P7702",
@@ -1164,8 +1752,9 @@ const PECTAB_CATALOG = [
     "main": 373,
     "add": 20,
     "eq": false,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "as 7701 stubs 6mm lower — Peach"
   },
   {
     "id": "P7703",
@@ -1176,20 +1765,22 @@ const PECTAB_CATALOG = [
     "main": 373,
     "add": 20,
     "eq": false,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes different position — Peach  ICN"
   },
   {
     "id": "P7704",
     "dir": "PAX",
     "st": 3,
-    "len": 503,
-    "pax": 61,
-    "main": 373,
+    "len": 477,
+    "pax": 63,
+    "main": 345,
     "add": 20,
     "eq": false,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "20/20/29  / logos — Nesma LXR"
   },
   {
     "id": "P7801",
@@ -1201,7 +1792,7 @@ const PECTAB_CATALOG = [
     "add": 15,
     "eq": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "15/15/18 (barcodes outside) — MST"
   },
   {
     "id": "P7802",
@@ -1211,21 +1802,21 @@ const PECTAB_CATALOG = [
     "pax": 60,
     "main": 420,
     "add": 20,
-    "eq": false,
+    "eq": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "(barcodes outside) — MBA"
   },
   {
     "id": "P7803",
     "dir": "PAX",
     "st": 3,
     "len": 540,
-    "pax": 60,
-    "main": 420,
+    "pax": 55,
+    "main": 425,
     "add": 20,
-    "eq": false,
+    "eq": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "(barcodes outside) / logos — TWAY"
   },
   {
     "id": "P7804",
@@ -1233,11 +1824,11 @@ const PECTAB_CATALOG = [
     "st": 3,
     "len": 540,
     "pax": 55,
-    "main": 420,
+    "main": 425,
     "add": 20,
-    "eq": false,
+    "eq": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "TWAY layout — TWAY"
   },
   {
     "id": "P7901",
@@ -1248,8 +1839,10 @@ const PECTAB_CATALOG = [
     "main": 425,
     "add": 16,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "Skymark (ROR)",
+    "mirrorPoint": 265.5
   },
   {
     "id": "P8001",
@@ -1260,20 +1853,9 @@ const PECTAB_CATALOG = [
     "main": 290,
     "add": 20,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
-  },
-  {
-    "id": "P8101",
-    "dir": "PAX",
-    "st": 3,
-    "len": 0,
-    "pax": 0,
-    "main": 0,
-    "add": 0,
-    "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "remarks": "jet2 revised pectab — misschien niet de correct afmetingen"
   },
   {
     "id": "P8201",
@@ -1285,7 +1867,7 @@ const PECTAB_CATALOG = [
     "add": 15,
     "eq": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logos — salamair"
   },
   {
     "id": "P8202",
@@ -1297,7 +1879,7 @@ const PECTAB_CATALOG = [
     "add": 15,
     "eq": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcode on outside"
   },
   {
     "id": "P8301",
@@ -1308,8 +1890,22 @@ const PECTAB_CATALOG = [
     "main": 387,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "barcodes on outside — Cuba",
+    "mirrorPoint": 258.5
+  },
+  {
+    "id": "P8401",
+    "dir": "PAX",
+    "st": 2,
+    "len": 400,
+    "pax": 63,
+    "main": 313,
+    "add": 22,
+    "eq": true,
+    "inUse": true,
+    "remarks": "dedicated PY (PY designator) — PY"
   },
   {
     "id": "P8501",
@@ -1320,8 +1916,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo's on main part and pax stub — KIX"
   },
   {
     "id": "P8502",
@@ -1332,8 +1929,9 @@ const PECTAB_CATALOG = [
     "main": 310,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo's on main part and pax stub — HGS"
   },
   {
     "id": "P8503",
@@ -1344,8 +1942,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo's on main part and pax stub — QV specific"
   },
   {
     "id": "P8504",
@@ -1356,8 +1955,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 5,
-    "remarks": "N"
+    "remarks": "logo's on main part and pax stub , 5 destinations — QV specific (VTE)"
   },
   {
     "id": "P8601",
@@ -1368,8 +1968,8 @@ const PECTAB_CATALOG = [
     "main": 320,
     "add": 25,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P8701",
@@ -1380,8 +1980,21 @@ const PECTAB_CATALOG = [
     "main": 353,
     "add": 14,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "0801 with stubs moved down a bit, needs revisit — PUJ (rushjob)"
+  },
+  {
+    "id": "P8801",
+    "dir": "ADD",
+    "st": 2,
+    "len": 510,
+    "pax": 51,
+    "main": 435,
+    "add": 11,
+    "eq": false,
+    "inUse": true,
+    "remarks": "max 1 onward on stub — 11/13"
   },
   {
     "id": "P8901",
@@ -1392,8 +2005,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "onmogelijke logo's on main part — DMK (AOT)"
   },
   {
     "id": "P8902",
@@ -1404,8 +2018,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "onmogelijke logo's on main part — HKT(OM)"
   },
   {
     "id": "P9001",
@@ -1416,8 +2031,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo's on main part and pax stub / pax stub beyond end of tag (because of vietjet and Willem), pax stub 5 mil lower(copy from 8501) — VJ default"
   },
   {
     "id": "P9002",
@@ -1428,8 +2044,9 @@ const PECTAB_CATALOG = [
     "main": 306,
     "add": 16,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "minimal additional stubs with larger barcode — VJ default"
   },
   {
     "id": "P9101",
@@ -1440,8 +2057,8 @@ const PECTAB_CATALOG = [
     "main": 330,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P9102",
@@ -1452,8 +2069,9 @@ const PECTAB_CATALOG = [
     "main": 330,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "HKT"
   },
   {
     "id": "P9201",
@@ -1464,8 +2082,48 @@ const PECTAB_CATALOG = [
     "main": 341,
     "add": 15,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "BKK VZ",
+    "mirrorPoint": 215
+  },
+  {
+    "id": "P9301",
+    "dir": "PAX",
+    "st": 2,
+    "len": 533,
+    "pax": 70,
+    "main": 433,
+    "add": 15,
+    "eq": true,
+    "inUse": true,
+    "remarks": "RFID full  (AAL) kiosk — barcodes outside"
+  },
+  {
+    "id": "P9302",
+    "dir": "PAX",
+    "st": 2,
+    "len": 508,
+    "pax": 63,
+    "main": 409,
+    "add": 16,
+    "eq": false,
+    "inUse": true,
+    "remarks": "copy from 9301 with normal barcodes — 16/20",
+    "mirrorPoint": 213
+  },
+  {
+    "id": "P9303",
+    "dir": "PAX",
+    "st": 2,
+    "len": 508,
+    "pax": 63,
+    "main": 409,
+    "add": 16,
+    "eq": false,
+    "inUse": true,
+    "remarks": "NUE - non AEA standard barcodes, do not change !!! — 16/20",
+    "mirrorPoint": 213
   },
   {
     "id": "P9401",
@@ -1476,8 +2134,10 @@ const PECTAB_CATALOG = [
     "main": 425,
     "add": 16,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "Skymark",
+    "mirrorPoint": 265.5
   },
   {
     "id": "P9501",
@@ -1488,8 +2148,9 @@ const PECTAB_CATALOG = [
     "main": 320,
     "add": 25,
     "eq": true,
+    "inUse": false,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "2 ! Pax stubs 50/40    18/18/35 — VJ RMQ"
   },
   {
     "id": "P9601",
@@ -1500,8 +2161,10 @@ const PECTAB_CATALOG = [
     "main": 412,
     "add": 11,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "CRL",
+    "mirrorPoint": 269
   },
   {
     "id": "P9701",
@@ -1512,8 +2175,8 @@ const PECTAB_CATALOG = [
     "main": 440,
     "add": 20,
     "eq": true,
-    "dest": 3,
-    "remarks": "N"
+    "inUse": true,
+    "dest": 3
   },
   {
     "id": "P9801",
@@ -1524,8 +2187,20 @@ const PECTAB_CATALOG = [
     "main": 362,
     "add": 10,
     "eq": true,
+    "inUse": true,
     "dest": 3,
-    "remarks": "N"
+    "remarks": "logo's — FT domestic"
+  },
+  {
+    "id": "P9901",
+    "dir": "PAX",
+    "st": 2,
+    "len": 456,
+    "pax": 66,
+    "main": 360,
+    "add": 15,
+    "eq": true,
+    "inUse": true
   }
 ];
 

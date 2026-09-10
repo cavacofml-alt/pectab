@@ -136,6 +136,9 @@ function matchOne(physical, rec) {
   if (rec.eq === false) {
     reasons.push({ key: "warn.eqN" });
   }
+  if (rec.inUse === false) {
+    reasons.push({ key: "warn.notInUse" });
+  }
 
   return { hardFail: false, score, classification, deltas, breakdown, reasons };
 }
@@ -151,7 +154,15 @@ function computeMatches(physical) {
       results.push({ pectab: rec, score: m.score, classification: m.classification, deltas: m.deltas, breakdown: m.breakdown, reasons: m.reasons });
     }
   }
-  results.sort((a, b) => b.score - a.score);
+  // um PECTAB fora de uso nunca deve aparecer à frente de um ativo, por
+  // melhor que o score dê no papel — só entra à frente se não houver
+  // nenhum candidato ativo disponível.
+  results.sort((a, b) => {
+    const aOut = a.pectab.inUse === false ? 1 : 0;
+    const bOut = b.pectab.inUse === false ? 1 : 0;
+    if (aOut !== bOut) return aOut - bOut;
+    return b.score - a.score;
+  });
   return { results, excluded };
 }
 
@@ -180,8 +191,13 @@ function runMatching(physical) {
 // de 3 níveis, para a resposta "posso usar ou não" nunca ficar ambígua.
 const DECISION_LEVEL = { exact: "use", safe: "use", risky: "verify", recompile: "dontuse" };
 const DECISION_ICON = { use: "🟢", verify: "🟡", dontuse: "🔴" };
-function decisionFor(classification) {
-  return DECISION_LEVEL[classification] || "verify";
+function decisionFor(classification, rec) {
+  const base = DECISION_LEVEL[classification] || "verify";
+  // uma medida exata não é a mesma pergunta que "isto ainda é o PECTAB
+  // certo" — um PECTAB fora de uso nunca deve mostrar luz verde, por
+  // melhor que as medidas batam certo por coincidência.
+  if (base === "use" && rec && rec.inUse === false) return "verify";
+  return base;
 }
 
 /* ---------- layout order for visualizer ---------- */
@@ -250,7 +266,8 @@ function renderDbList() {
     tr.className = rec.id === state.selected ? "selected" : "";
     tr.dataset.id = rec.id;
     const eqBadge = rec.eq === false ? `<span class="badge risky" title="${t("field.eqBadge.title")}">eq=N</span>` : "";
-    tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td><td>${eqBadge}</td>`;
+    const inUseBadge = rec.inUse === false ? `<span class="badge recompile" title="${t("field.notInUseBadge.title")}">${t("badge.notInUse")}</span>` : "";
+    tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td><td>${eqBadge} ${inUseBadge}</td>`;
     tbody.appendChild(tr);
   }
 }
@@ -278,7 +295,7 @@ function scoreBreakdownTable(r) {
 }
 
 function renderBestMatchHtml(r) {
-  const level = decisionFor(r.classification);
+  const level = decisionFor(r.classification, r.pectab);
   const isTopResult = state.results[0] && state.results[0].pectab.id === r.pectab.id;
   const checklist = [
     checklistItem("checklist.dir", true),
@@ -295,7 +312,10 @@ function renderBestMatchHtml(r) {
       <div class="decision-banner decision-${level}">${DECISION_ICON[level]} ${t(`decision.${level}`, { id: r.pectab.id })}</div>
       <div class="hero-top">
         <span class="hero-id">${r.pectab.id}</span>
-        <span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>
+        <span>
+          ${r.pectab.inUse === false ? `<span class="badge recompile">${t("badge.notInUse")}</span>` : ""}
+          <span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>
+        </span>
       </div>
       <div class="hero-subtitle">${t("hero.subtitle", { dir: r.pectab.dir, st: r.pectab.st, len: r.pectab.len })}</div>
       <p class="result-explain">${classExplain(r.classification)}</p>
@@ -310,6 +330,7 @@ function renderCandidateRowHtml(r) {
   return `
     <div class="candidate-row${r.pectab.id === state.selected ? " active" : ""}" data-id="${r.pectab.id}">
       <span class="id">${r.pectab.id}</span>
+      ${r.pectab.inUse === false ? `<span class="badge recompile">${t("badge.notInUse")}</span>` : ""}
       <span class="badge ${r.classification}">${classLabel(r.classification)}</span>
       <span class="score">${r.score}%</span>
     </div>`;
@@ -655,7 +676,7 @@ function exportValidationReport() {
     toast(t("report.noCandidate"));
     return;
   }
-  const level = decisionFor(r.classification);
+  const level = decisionFor(r.classification, r.pectab);
   const lines = [
     t("report.title"),
     t("report.generated", { date: new Date().toISOString() }),
