@@ -255,14 +255,14 @@ function renderVisualizer() {
 
   const totalMm = Math.max(rec.len, physical ? physical.len : 0, sectionSum(rec));
   const pxPerMm = Math.min(6, 900 / totalMm);
-  const barH = 34;
-  const gapY = 14;
+  const barH = 46;
+  const gapY = 16;
   const width = Math.ceil(totalMm * pxPerMm) + 20;
   const rows = physical ? 2 : 1;
   const height = rows * (barH + gapY) + 40;
 
   let y = 20;
-  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${BARCODE_DEFS}`;
 
   if (physical) {
     svg += renderBar(physSections, 10, y, pxPerMm, barH, "Físico (medido)");
@@ -306,15 +306,49 @@ function renderVisualizer() {
   }
 }
 
+const BARCODE_DEFS = `<defs>
+  <pattern id="barcodePattern" width="5" height="10" patternUnits="userSpaceOnUse">
+    <rect width="5" height="10" fill="#fff"/>
+    <rect x="0" width="1.2" height="10" fill="#222"/>
+    <rect x="2" width="0.8" height="10" fill="#222"/>
+    <rect x="3.4" width="1.5" height="10" fill="#222"/>
+  </pattern>
+</defs>`;
+const GREEN_STRIPE = "#2ea44f";
+
+// desenha uma barra parecida com a etiqueta física real: uma aba colorida
+// por secção (para identificar PAX/MAIN/ADD à distância), uma faixa com
+// textura de código de barras por baixo, faixas verdes nas bordas do MAIN
+// (como no talão principal real), e linhas de corte entre secções.
 function renderBar(sections, x0, y0, pxPerMm, h, label) {
+  const headerH = 12;
+  const barcodeY = y0 + headerH;
+  const barcodeH = h - headerH;
   let x = x0;
   let out = `<text x="${x0}" y="${y0 - 4}">${label}</text>`;
+
   for (const s of sections) {
     const w = Math.max(1, s.len * pxPerMm);
-    out += `<rect x="${x}" y="${y0}" width="${w}" height="${h}" fill="${TYPE_COLOR[s.type]}" fill-opacity="0.55" stroke="${TYPE_COLOR[s.type]}"/>`;
-    if (w > 18) out += `<text x="${x + 3}" y="${y0 + h / 2 + 3}">${s.label}</text>`;
+    out += `<rect x="${x}" y="${y0}" width="${w}" height="${headerH}" fill="${TYPE_COLOR[s.type]}"/>`;
+    out += `<rect x="${x}" y="${barcodeY}" width="${w}" height="${barcodeH}" fill="url(#barcodePattern)"/>`;
+    if (w >= s.label.length * 6 + 4) {
+      out += `<text x="${x + 3}" y="${y0 + headerH - 3}" fill="#fff" font-size="8">${s.label}</text>`;
+    }
+    if (s.type === "MAIN") {
+      const stripeW = Math.min(4, Math.max(1.5, w * 0.06));
+      out += `<rect x="${x}" y="${y0}" width="${stripeW}" height="${h}" fill="${GREEN_STRIPE}"/>`;
+      out += `<rect x="${x + w - stripeW}" y="${y0}" width="${stripeW}" height="${h}" fill="${GREEN_STRIPE}"/>`;
+    }
     x += w;
   }
+
+  // linhas de corte/perfuração entre secções (não são desvios, são cortes reais da etiqueta)
+  let cutX = x0;
+  for (let i = 0; i < sections.length - 1; i++) {
+    cutX += sections[i].len * pxPerMm;
+    out += `<line x1="${cutX}" y1="${y0}" x2="${cutX}" y2="${y0 + h}" stroke="#fff" stroke-width="1.5" stroke-dasharray="1,2"/>`;
+  }
+
   out += `<rect x="${x0}" y="${y0}" width="${x - x0}" height="${h}" fill="none" stroke="#888" stroke-width="0.5"/>`;
   return out;
 }
