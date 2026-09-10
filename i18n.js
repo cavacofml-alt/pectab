@@ -78,6 +78,8 @@ const I18N = {
     "option.dirPax": "PAX primeiro",
     "option.dirAdd": "ADD primeiro",
     "advanced.title": "Avançado (tolerância)",
+    "btn.chooseFile": "Escolher ficheiro",
+    "file.noneChosen": "Nenhum ficheiro escolhido",
 
     "zone.measure.title": "① MEDIR",
     "zone.match.title": "② RESULTADO DO MATCH",
@@ -288,6 +290,8 @@ const I18N = {
     "option.dirPax": "PAX first",
     "option.dirAdd": "ADD first",
     "advanced.title": "Advanced (tolerance)",
+    "btn.chooseFile": "Choose file",
+    "file.noneChosen": "No file chosen",
 
     "zone.measure.title": "① MEASURE",
     "zone.match.title": "② MATCH RESULT",

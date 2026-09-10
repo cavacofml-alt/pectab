@@ -26,7 +26,11 @@
     <h2 data-i18n="zone.measure.title">① MEDIR</h2>
 
     <div class="row">
-      <input type="file" id="import-docx-file" accept=".docx">
+      <span class="file-picker">
+        <button type="button" class="ghost file-picker-btn" data-target="import-docx-file" data-i18n="btn.chooseFile">Escolher ficheiro</button>
+        <span class="file-picker-name" data-for="import-docx-file" data-i18n="file.noneChosen">Nenhum ficheiro escolhido</span>
+        <input type="file" id="import-docx-file" accept=".docx" hidden>
+      </span>
       <button type="button" class="secondary" id="import-docx-btn" data-i18n="btn.importDocx">Preencher a partir do .docx</button>
     </div>
     <p class="empty-state" id="import-docx-status" data-i18n="docx.statusDefault">
@@ -192,7 +196,11 @@
 
         <h2 class="mt" data-i18n="panel.import.title">Importar</h2>
         <label for="import-json-file" data-i18n="label.jsonFile">Ficheiro JSON</label>
-        <input type="file" id="import-json-file" accept="application/json">
+        <span class="file-picker">
+          <button type="button" class="ghost file-picker-btn" data-target="import-json-file" data-i18n="btn.chooseFile">Escolher ficheiro</button>
+          <span class="file-picker-name" data-for="import-json-file" data-i18n="file.noneChosen">Nenhum ficheiro escolhido</span>
+          <input type="file" id="import-json-file" accept="application/json" hidden>
+        </span>
         <label class="mt" for="import-json-text" data-i18n="label.orPasteJson">ou cola JSON (array de PECTABs)</label>
         <textarea id="import-json-text" rows="4"></textarea>
         <div class="row mt"><button type="button" class="secondary" id="import-json-btn" data-i18n="btn.importJson">Importar / atualizar</button></div>

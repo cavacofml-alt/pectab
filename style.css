@@ -214,6 +214,9 @@ button.ghost {
 button:hover { filter: brightness(1.08); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.file-picker { display: inline-flex; align-items: center; gap: 8px; }
+.file-picker-name { color: var(--muted); font-size: 12px; }
+
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .row.between { justify-content: space-between; }
 .mt { margin-top: 10px; }

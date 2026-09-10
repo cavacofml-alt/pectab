@@ -899,6 +899,27 @@ function init() {
   // partia o toggle do <details> do score, porque um re-render a meio
   // do clique reconstrói o DOM e fecha-o outra vez no mesmo instante.)
 
+  // botão de "escolher ficheiro" traduzível: o <input type="file"> nativo
+  // mostra sempre o texto do browser/SO ("Choose File" / "Escolher
+  // Ficheiro"), impossível de traduzir por CSS/HTML — escondemos o input
+  // e usamos um botão + texto nossos, que só aciona o input por baixo.
+  document.querySelectorAll(".file-picker-btn").forEach((btn) => {
+    btn.addEventListener("click", () => el(btn.dataset.target).click());
+  });
+  document.querySelectorAll(".file-picker input[type=file]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const nameEl = document.querySelector(`.file-picker-name[data-for="${input.id}"]`);
+      if (!nameEl) return;
+      if (input.files[0]) {
+        nameEl.textContent = input.files[0].name;
+        nameEl.removeAttribute("data-i18n");
+      } else {
+        nameEl.setAttribute("data-i18n", "file.noneChosen");
+        nameEl.textContent = t("file.noneChosen");
+      }
+    });
+  });
+
   el("candidates-list").addEventListener("click", (ev) => {
     const row = ev.target.closest(".candidate-row");
     if (!row) return;
