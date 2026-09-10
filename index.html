@@ -99,6 +99,15 @@
 
     <section class="panel">
       <h2>Medida física (rolo testado)</h2>
+      <div class="row">
+        <input type="file" id="import-docx-file" accept=".docx">
+        <button type="button" class="secondary" id="import-docx-btn">Preencher a partir do .docx</button>
+      </div>
+      <p class="empty-state" id="import-docx-status">
+        Deteção automática, best-effort — confirma sempre os valores antes
+        de procurar match. Funciona offline, sem enviar o ficheiro para
+        lado nenhum.
+      </p>
       <form id="match-form">
         <div class="field-grid">
           <div><label title="Qual secção sai primeiro da impressora: Pax Stub → PAX, Additional Stubs → ADD">dir</label><select id="phys-dir"><option>PAX</option><option>ADD</option></select></div>

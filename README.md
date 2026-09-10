@@ -85,6 +85,30 @@ Os pesos e limiares (`WEIGHTS`, `LEN_TOLERANCE_DEFAULT`,
 `SAFE_THRESHOLD`, `RISK_THRESHOLD`) estão no topo de `app.js` e são um
 ponto de partida — ajusta-os à tua experiência de campo.
 
+## Importar medidas de um .docx
+
+O botão "Preencher a partir do .docx" no formulário "Medida física" lê um
+ficheiro `.docx` de medição física diretamente no browser (`word/document.xml`
+dentro do `.docx`, que é um `.zip`, descomprimido com a `DecompressionStream`
+nativa — sem bibliotecas externas, sem enviar o ficheiro para lado nenhum)
+e tenta preencher `dir`, `st`, `len`, `pax`, `main`, `add` a partir de
+rótulos comuns em inglês (`Bag tag length`, `Passenger Stub length`,
+`Main tag part length`, `Additional Stub(s) length`, `How many additional
+stubs`, e qual checkbox — Pax Stub ou Additional Stubs — está marcado).
+
+É deteção **best-effort por regex**, não um parser garantido: foi
+calibrada contra um formulário real (BHX) e é tolerante a alguma variação
+de wording, mas qualquer formulário com uma estrutura muito diferente
+pode não ser detetado. Confirma sempre os valores antes de procurar
+match — a mensagem de estado diz exatamente que campos foram e não foram
+detetados, e assinala quando "Additional Stub(s) length" lista mais do
+que um valor (talões de tamanhos diferentes; usa o primeiro e avisa para
+correres o match outra vez com o(s) outro(s)).
+
+Requer um browser com suporte a `DecompressionStream` (Chrome/Edge 80+,
+Firefox 113+, Safari 16.4+) — sem isso, mostra um erro claro e o
+formulário preenche-se à mão como sempre.
+
 ## Visualizador
 
 Desenha duas barras à escala: a medida física e o PECTAB selecionado,

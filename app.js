@@ -425,6 +425,162 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.remove(), 3000);
 }
 
+/* ---------- importar .docx (formulário de medidas físicas) ---------- */
+// .docx é um .zip com word/document.xml lá dentro. Lemos o zip à mão
+// (formato simples: End Of Central Directory + Central Directory) e
+// descomprimimos com a DecompressionStream nativa do browser — sem
+// bibliotecas externas, para a app continuar a funcionar offline/file://.
+
+async function readDocxDocumentXml(arrayBuffer) {
+  const view = new DataView(arrayBuffer);
+  const bytes = new Uint8Array(arrayBuffer);
+  const EOCD_SIG = 0x06054b50;
+  const CD_SIG = 0x02014b50;
+
+  let eocdOffset = -1;
+  const minOffset = Math.max(0, bytes.length - 65557); // 22 (EOCD fixo) + comentário máx 65535
+  for (let i = bytes.length - 22; i >= minOffset; i--) {
+    if (view.getUint32(i, true) === EOCD_SIG) {
+      eocdOffset = i;
+      break;
+    }
+  }
+  if (eocdOffset === -1) throw new Error("não parece um .docx válido (fim de arquivo ZIP não encontrado)");
+
+  const cdEntries = view.getUint16(eocdOffset + 10, true);
+  const cdOffset = view.getUint32(eocdOffset + 16, true);
+
+  let offset = cdOffset;
+  for (let i = 0; i < cdEntries; i++) {
+    if (view.getUint32(offset, true) !== CD_SIG) throw new Error("índice do .docx corrompido");
+    const compMethod = view.getUint16(offset + 10, true);
+    const compSize = view.getUint32(offset + 20, true);
+    const nameLen = view.getUint16(offset + 28, true);
+    const extraLen = view.getUint16(offset + 30, true);
+    const commentLen = view.getUint16(offset + 32, true);
+    const localHeaderOffset = view.getUint32(offset + 42, true);
+    const name = new TextDecoder().decode(bytes.slice(offset + 46, offset + 46 + nameLen));
+
+    if (name === "word/document.xml") {
+      const localNameLen = view.getUint16(localHeaderOffset + 26, true);
+      const localExtraLen = view.getUint16(localHeaderOffset + 28, true);
+      const dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen;
+      const compData = bytes.slice(dataStart, dataStart + compSize);
+
+      let xmlBytes;
+      if (compMethod === 0) {
+        xmlBytes = compData;
+      } else if (compMethod === 8) {
+        if (typeof DecompressionStream === "undefined") {
+          throw new Error("este browser não suporta descompressão nativa (DecompressionStream) — atualiza o browser ou preenche o formulário à mão");
+        }
+        const stream = new Blob([compData]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        xmlBytes = new Uint8Array(await new Response(stream).arrayBuffer());
+      } else {
+        throw new Error(`método de compressão do .docx não suportado (${compMethod})`);
+      }
+      return new TextDecoder("utf-8").decode(xmlBytes);
+    }
+    offset += 46 + nameLen + extraLen + commentLen;
+  }
+  throw new Error("word/document.xml não encontrado dentro do .docx");
+}
+
+function docxXmlToText(xml) {
+  const paraRe = /<w:p[ >][\s\S]*?<\/w:p>/g;
+  const textRe = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+  const lines = [];
+  let para;
+  while ((para = paraRe.exec(xml))) {
+    let line = "";
+    let t;
+    textRe.lastIndex = 0;
+    while ((t = textRe.exec(para[0]))) line += t[1];
+    lines.push(
+      line.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    );
+  }
+  return lines.join("\n");
+}
+
+function extractPhysicalFieldsFromText(text) {
+  const found = {};
+  const notes = [];
+
+  const numAfterLabel = (labelRe) => {
+    const m = text.match(new RegExp(labelRe + "\\s*(?:in\\s*mm)?\\s*[:=]\\s*([\\d.]+)", "i"));
+    return m ? parseFloat(m[1]) : null;
+  };
+
+  found.len = numAfterLabel("(?:bag\\s*tag\\s*length|total\\s*tag\\s*length)");
+  found.pax = numAfterLabel("(?:passenger\\s*stub\\s*length|pax\\s*stub\\s*length)");
+  found.main = numAfterLabel("main\\s*tag\\s*(?:part\\s*)?length");
+
+  const addMatch = text.match(/additional\s*stubs?\s*length\s*(?:in\s*mm)?\s*[:=]\s*([\d.]+(?:\s*&\s*[\d.]+)*)/i);
+  if (addMatch) {
+    const vals = addMatch[1]
+      .split("&")
+      .map((s) => parseFloat(s.trim()))
+      .filter((v) => !isNaN(v));
+    found.add = vals.length ? vals[0] : null;
+    if (vals.length > 1) {
+      notes.push(`add: o formulário lista ${vals.length} valores (${vals.join(", ")}mm) — os talões não são todos iguais. Usei ${vals[0]}mm; corre o match outra vez com os outros valores.`);
+    }
+  }
+
+  const stMatch = text.match(/(?:how\s*many\s*additional\s*stubs|number\s*of\s*additional\s*stubs|n[ºo]\.?\s*of\s*additional\s*stubs)\s*[:=]?\s*(\d+)/i);
+  found.st = stMatch ? parseInt(stMatch[1], 10) : null;
+
+  const checkedRe = /[☒☑✓✔]/;
+  const paxCheckbox = text.match(/pax\s*stub\s*([☐☑☒✓✔])/i);
+  const addCheckbox = text.match(/additional\s*stubs\s*([☐☑☒✓✔])/i);
+  if (paxCheckbox && checkedRe.test(paxCheckbox[1])) found.dir = "PAX";
+  else if (addCheckbox && checkedRe.test(addCheckbox[1])) found.dir = "ADD";
+
+  return { found, notes };
+}
+
+async function importDocxIntoPhysicalForm(file) {
+  const statusHost = el("import-docx-status");
+  try {
+    const buf = await file.arrayBuffer();
+    const xml = await readDocxDocumentXml(buf);
+    const text = docxXmlToText(xml);
+    const { found, notes } = extractPhysicalFieldsFromText(text);
+
+    const applied = [];
+    const missing = [];
+    const setIfFound = (id, key, fmt) => {
+      if (found[key] !== null && found[key] !== undefined && !isNaN(found[key])) {
+        el(id).value = found[key];
+        applied.push(`${key}=${fmt ? fmt(found[key]) : found[key]}`);
+      } else {
+        missing.push(key);
+      }
+    };
+    setIfFound("phys-len", "len");
+    setIfFound("phys-pax", "pax");
+    setIfFound("phys-main", "main");
+    setIfFound("phys-add", "add");
+    setIfFound("phys-st", "st");
+    if (found.dir) {
+      el("phys-dir").value = found.dir;
+      applied.push(`dir=${found.dir}`);
+    } else {
+      missing.push("dir");
+    }
+
+    let msg = applied.length ? `Preenchido: ${applied.join(", ")}.` : "Não consegui detetar nenhum campo.";
+    if (missing.length) msg += ` Não detetado (confirma à mão): ${missing.join(", ")}.`;
+    statusHost.textContent = msg;
+    if (notes.length) statusHost.textContent += " " + notes.join(" ");
+    toast(missing.length ? "Importado com lacunas — revê os campos assinalados." : "Formulário preenchido a partir do .docx.");
+  } catch (e) {
+    statusHost.textContent = `Falha a importar: ${e.message}`;
+    toast("Não consegui ler o .docx — preenche à mão.");
+  }
+}
+
 /* ---------- wiring ---------- */
 function readPhysicalForm() {
   const num = (id) => Number(el(id).value);
@@ -560,6 +716,15 @@ function init() {
   });
 
   el("export-compile-btn").addEventListener("click", exportCompilationRequest);
+
+  el("import-docx-btn").addEventListener("click", () => {
+    const file = el("import-docx-file").files[0];
+    if (!file) {
+      toast("Escolhe primeiro um ficheiro .docx.");
+      return;
+    }
+    importDocxIntoPhysicalForm(file);
+  });
 
   el("history-form").addEventListener("submit", (ev) => {
     ev.preventDefault();
