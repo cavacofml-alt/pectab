@@ -249,22 +249,37 @@ function renderVisualizer() {
   // declared len line
   const lenX = 10 + rec.len * pxPerMm;
   svg += `<line x1="${lenX}" y1="10" x2="${lenX}" y2="${height - 10}" stroke="#cf222e" stroke-dasharray="4,3" stroke-width="1.5"/>`;
-  svg += `<text x="${lenX + 3}" y="14">len declarado: ${rec.len}mm</text>`;
 
   const sum = sectionSum(rec);
+  const summaryLines = [];
+  summaryLines.push(`<span style="color:#cf222e">┃</span> len declarado (${rec.id}): ${rec.len}mm`);
+
   if (sum !== rec.len) {
     const sumX = 10 + sum * pxPerMm;
     svg += `<line x1="${sumX}" y1="10" x2="${sumX}" y2="${height - 10}" stroke="#9a6700" stroke-dasharray="2,2" stroke-width="1.5"/>`;
-    svg += `<text x="${sumX + 3}" y="${height - 4}">soma secções: ${sum}mm (Δ${sum - rec.len}mm)</text>`;
+    summaryLines.push(`<span style="color:#9a6700">┊</span> soma das secções (${rec.id}): ${sum}mm — ${fmtDelta(sum - rec.len)} face ao len declarado`);
   }
 
   // boundary mismatch annotations vs physical
   if (physical) {
-    svg += boundaryDeltas(physSections, recSections, pxPerMm, height);
+    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height);
+    svg += markup;
+    for (const d of deltas) {
+      summaryLines.push(
+        `<span style="color:#cf222e">│</span> ${d.label}: ${rec.id} desvia ${fmtDelta(d.delta)} do físico medido a partir daqui`
+      );
+    }
   }
 
   svg += "</svg>";
   svgHost.innerHTML = svg;
+
+  const summaryHost = el("viz-summary");
+  if (summaryHost) {
+    summaryHost.innerHTML = summaryLines.length
+      ? `<ul class="excluded-list">${summaryLines.map((l) => `<li>${l}</li>`).join("")}</ul>`
+      : '<p class="empty-state">Sem desvios a assinalar.</p>';
+  }
 }
 
 function renderBar(sections, x0, y0, pxPerMm, h, label) {
@@ -284,16 +299,23 @@ function boundaryDeltas(physSections, recSections, pxPerMm, height) {
   const physBoundaries = cumulativeBoundaries(physSections);
   const recBoundaries = cumulativeBoundaries(recSections);
   const n = Math.min(physBoundaries.length, recBoundaries.length) - 1; // ignore final edge (=total len, already shown)
-  let out = "";
+  let markup = "";
+  const deltas = [];
+  let prevDelta = 0;
   for (let i = 1; i < n; i++) {
     const delta = recBoundaries[i] - physBoundaries[i];
-    if (Math.abs(delta) >= VIZ_RISK_MM) {
+    // só assinala onde o desvio COMEÇA — se o desvio se mantiver igual ao
+    // da fronteira anterior, é a mesma causa a propagar-se, não um novo problema
+    if (Math.abs(delta) >= VIZ_RISK_MM && delta !== prevDelta) {
       const x = 10 + physBoundaries[i] * pxPerMm;
-      out += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
-      out += `<text x="${x + 2}" y="${20 + (height - 40) * (i / n)}" fill="#cf222e">Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
+      const label = physSections[i - 1] ? `fim ${physSections[i - 1].label}` : `fronteira ${i}`;
+      markup += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
+      markup += `<text x="${x + 2}" y="${20 + (height - 40) * (i / n)}" fill="#cf222e">${label} Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
+      deltas.push({ label, delta });
     }
+    prevDelta = delta;
   }
-  return out;
+  return { markup, deltas };
 }
 
 function cumulativeBoundaries(sections) {
