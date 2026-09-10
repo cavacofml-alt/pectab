@@ -52,8 +52,7 @@ const I18N = {
     "option.paxFirst": "forçar PAX primeiro",
     "option.addFirst": "forçar ADD primeiro",
     "viz.legend.add": "ADD (talão)",
-    "viz.legend.mainStripes": "faixas do MAIN (decorativo, como numa etiqueta real)",
-    "viz.legend.cutLines": "┊┊┊ linhas brancas = corte entre secções · texturas = código de barras (decorativo)",
+    "viz.legend.cutLines": "A/B = pontas da etiqueta · linha preta = corte entre secções",
 
     "panel.history.title": "Histórico de testes",
     "label.date": "Data",
@@ -203,8 +202,7 @@ const I18N = {
     "option.paxFirst": "force PAX first",
     "option.addFirst": "force ADD first",
     "viz.legend.add": "ADD (stub)",
-    "viz.legend.mainStripes": "MAIN stripes (decorative, like a real tag)",
-    "viz.legend.cutLines": "┊┊┊ white lines = cut between sections · texture = barcode (decorative)",
+    "viz.legend.cutLines": "A/B = tag ends · black line = cut between sections",
 
     "panel.history.title": "Test history",
     "label.date": "Date",

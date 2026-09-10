@@ -256,21 +256,22 @@ function renderVisualizer() {
   const pxPerMm = Math.min(6, 900 / totalMm);
   const barH = 46;
   const gapY = 16;
-  const width = Math.ceil(totalMm * pxPerMm) + 20;
+  const marginX = 22;
+  const width = Math.ceil(totalMm * pxPerMm) + marginX * 2;
   const rows = physical ? 2 : 1;
   const height = rows * (barH + gapY) + 40;
 
   let y = 20;
-  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${BARCODE_DEFS}`;
+  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
 
   if (physical) {
-    svg += renderBar(physSections, 10, y, pxPerMm, barH, t("viz.row.physical"));
+    svg += renderBar(physSections, marginX, y, pxPerMm, barH, t("viz.row.physical"));
     y += barH + gapY;
   }
-  svg += renderBar(recSections, 10, y, pxPerMm, barH, t("viz.row.logical", { id: rec.id }));
+  svg += renderBar(recSections, marginX, y, pxPerMm, barH, t("viz.row.logical", { id: rec.id }));
 
   // declared len line
-  const lenX = 10 + rec.len * pxPerMm;
+  const lenX = marginX + rec.len * pxPerMm;
   svg += `<line x1="${lenX}" y1="10" x2="${lenX}" y2="${height - 10}" stroke="#cf222e" stroke-dasharray="4,3" stroke-width="1.5"/>`;
 
   const sum = sectionSum(rec);
@@ -278,7 +279,7 @@ function renderVisualizer() {
   summaryLines.push(`<span style="color:#cf222e">┃</span> ${t("viz.summary.declaredLen", { id: rec.id, len: rec.len })}`);
 
   if (sum !== rec.len) {
-    const sumX = 10 + sum * pxPerMm;
+    const sumX = marginX + sum * pxPerMm;
     svg += `<line x1="${sumX}" y1="10" x2="${sumX}" y2="${height - 10}" stroke="#9a6700" stroke-dasharray="2,2" stroke-width="1.5"/>`;
     summaryLines.push(
       `<span style="color:#9a6700">┊</span> ${t("viz.summary.sectionSum", { id: rec.id, sum, delta: fmtDelta(sum - rec.len) })}`
@@ -287,7 +288,7 @@ function renderVisualizer() {
 
   // boundary mismatch annotations vs physical
   if (physical) {
-    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height);
+    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height, marginX);
     svg += markup;
     for (const d of deltas) {
       summaryLines.push(
@@ -307,54 +308,35 @@ function renderVisualizer() {
   }
 }
 
-const BARCODE_DEFS = `<defs>
-  <pattern id="barcodePattern" width="5" height="10" patternUnits="userSpaceOnUse">
-    <rect width="5" height="10" fill="#fff"/>
-    <rect x="0" width="1.2" height="10" fill="#222"/>
-    <rect x="2" width="0.8" height="10" fill="#222"/>
-    <rect x="3.4" width="1.5" height="10" fill="#222"/>
-  </pattern>
-</defs>`;
-const GREEN_STRIPE = "#2ea44f";
-
-// desenha uma barra parecida com a etiqueta física real: uma aba colorida
-// por secção (para identificar PAX/MAIN/ADD à distância), uma faixa com
-// textura de código de barras por baixo, faixas verdes nas bordas do MAIN
-// (como no talão principal real), e linhas de corte entre secções.
+// barra simples de blocos de cor lisa por secção, com "A"/"B" nas pontas
+// (como o esquema de referência) e uma linha fina a marcar cada corte.
 function renderBar(sections, x0, y0, pxPerMm, h, label) {
-  const headerH = 12;
-  const barcodeY = y0 + headerH;
-  const barcodeH = h - headerH;
   let x = x0;
   let out = `<text x="${x0}" y="${y0 - 4}">${label}</text>`;
 
   for (const s of sections) {
     const w = Math.max(1, s.len * pxPerMm);
-    out += `<rect x="${x}" y="${y0}" width="${w}" height="${headerH}" fill="${TYPE_COLOR[s.type]}"/>`;
-    out += `<rect x="${x}" y="${barcodeY}" width="${w}" height="${barcodeH}" fill="url(#barcodePattern)"/>`;
+    out += `<rect x="${x}" y="${y0}" width="${w}" height="${h}" fill="${TYPE_COLOR[s.type]}"/>`;
     if (w >= s.label.length * 6 + 4) {
-      out += `<text x="${x + 3}" y="${y0 + headerH - 3}" fill="#fff" font-size="8">${s.label}</text>`;
-    }
-    if (s.type === "MAIN") {
-      const stripeW = Math.min(4, Math.max(1.5, w * 0.06));
-      out += `<rect x="${x}" y="${y0}" width="${stripeW}" height="${h}" fill="${GREEN_STRIPE}"/>`;
-      out += `<rect x="${x + w - stripeW}" y="${y0}" width="${stripeW}" height="${h}" fill="${GREEN_STRIPE}"/>`;
+      out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="#fff" font-size="9" text-anchor="middle">${s.label}</text>`;
     }
     x += w;
   }
 
-  // linhas de corte/perfuração entre secções (não são desvios, são cortes reais da etiqueta)
+  // linhas de corte entre secções (não são desvios, são cortes reais da etiqueta)
   let cutX = x0;
   for (let i = 0; i < sections.length - 1; i++) {
     cutX += sections[i].len * pxPerMm;
-    out += `<line x1="${cutX}" y1="${y0}" x2="${cutX}" y2="${y0 + h}" stroke="#fff" stroke-width="1.5" stroke-dasharray="1,2"/>`;
+    out += `<line x1="${cutX}" y1="${y0}" x2="${cutX}" y2="${y0 + h}" stroke="#000" stroke-width="1"/>`;
   }
 
-  out += `<rect x="${x0}" y="${y0}" width="${x - x0}" height="${h}" fill="none" stroke="#888" stroke-width="0.5"/>`;
+  out += `<rect x="${x0}" y="${y0}" width="${x - x0}" height="${h}" fill="none" stroke="#333" stroke-width="1"/>`;
+  out += `<text x="${x0 - 8}" y="${y0 + h / 2 + 4}" text-anchor="end" font-weight="bold">A</text>`;
+  out += `<text x="${x + 8}" y="${y0 + h / 2 + 4}" text-anchor="start" font-weight="bold">B</text>`;
   return out;
 }
 
-function boundaryDeltas(physSections, recSections, pxPerMm, height) {
+function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX) {
   const physBoundaries = cumulativeBoundaries(physSections);
   const recBoundaries = cumulativeBoundaries(recSections);
   const n = Math.min(physBoundaries.length, recBoundaries.length) - 1; // ignore final edge (=total len, already shown)
@@ -366,7 +348,7 @@ function boundaryDeltas(physSections, recSections, pxPerMm, height) {
     // só assinala onde o desvio COMEÇA — se o desvio se mantiver igual ao
     // da fronteira anterior, é a mesma causa a propagar-se, não um novo problema
     if (Math.abs(delta) >= VIZ_RISK_MM && delta !== prevDelta) {
-      const x = 10 + physBoundaries[i] * pxPerMm;
+      const x = marginX + physBoundaries[i] * pxPerMm;
       const label = physSections[i - 1] ? t("viz.boundary.end", { section: physSections[i - 1].label }) : t("viz.boundary.generic", { n: i });
       markup += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
       markup += `<text x="${x + 2}" y="${20 + (height - 40) * (i / n)}" fill="#cf222e">${label} Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
