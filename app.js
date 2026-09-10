@@ -2,7 +2,7 @@
 
 /* ---------- tuning knobs (ajusta à experiência de campo) ---------- */
 const LEN_TOLERANCE_DEFAULT = 0; // mm — acima disto, len é hard fail
-const WEIGHTS = { pax: 1.0, main: 1.2, add: 1.5 };
+const WEIGHTS = { pax: 1.0, main: 1.2, add: 1.5, len: 0.8 };
 const SAFE_THRESHOLD = 90; // score >= isto => "compromisso seguro"
 const RISK_THRESHOLD = 60; // score >= isto => "compromisso arriscado"
 const VIZ_RISK_MM = 3; // desvio de fronteira (mm) a partir do qual o visualizador marca a vermelho
@@ -79,12 +79,13 @@ function matchOne(physical, rec) {
   const penalty =
     Math.abs(deltas.pax) * WEIGHTS.pax +
     Math.abs(deltas.main) * WEIGHTS.main +
-    Math.abs(deltas.add) * WEIGHTS.add * Math.max(1, rec.st / 2);
+    Math.abs(deltas.add) * WEIGHTS.add * Math.max(1, rec.st / 2) +
+    Math.abs(deltas.len) * WEIGHTS.len;
 
   const score = Math.max(0, Math.round(100 - penalty));
 
   let classification;
-  if (deltas.pax === 0 && deltas.main === 0 && deltas.add === 0) {
+  if (deltas.pax === 0 && deltas.main === 0 && deltas.add === 0 && deltas.len === 0) {
     classification = "exact";
   } else if (score >= SAFE_THRESHOLD) {
     classification = "safe";
