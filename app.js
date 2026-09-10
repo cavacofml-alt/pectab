@@ -530,20 +530,29 @@ function extractPhysicalFieldsFromText(text) {
   const found = {};
   const notes = [];
 
+  // PECTABs só existem em mm inteiros — um formulário com decimais
+  // (ex: "457.2") é arredondado, nunca aceite tal e qual.
+  const roundMm = (value, label) => {
+    if (value === null || isNaN(value)) return value;
+    const rounded = Math.round(value);
+    if (rounded !== value) notes.push(`${label}: ${value}mm arredondado para ${rounded}mm (PECTABs usam mm inteiros)`);
+    return rounded;
+  };
+
   const numAfterLabel = (labelRe) => {
     const m = text.match(new RegExp(labelRe + "\\s*(?:in\\s*mm)?\\s*[:=]\\s*([\\d.]+)", "i"));
     return m ? parseFloat(m[1]) : null;
   };
 
-  found.len = numAfterLabel("(?:bag\\s*tag\\s*length|total\\s*tag\\s*length)");
-  found.pax = numAfterLabel("(?:passenger\\s*stub\\s*length|pax\\s*stub\\s*length)");
-  found.main = numAfterLabel("main\\s*tag\\s*(?:part\\s*)?length");
+  found.len = roundMm(numAfterLabel("(?:bag\\s*tag\\s*length|total\\s*tag\\s*length)"), "len");
+  found.pax = roundMm(numAfterLabel("(?:passenger\\s*stub\\s*length|pax\\s*stub\\s*length)"), "pax");
+  found.main = roundMm(numAfterLabel("main\\s*tag\\s*(?:part\\s*)?length"), "main");
 
   const addMatch = text.match(/additional\s*stubs?\s*length\s*(?:in\s*mm)?\s*[:=]\s*([\d.]+(?:\s*&\s*[\d.]+)*)/i);
   if (addMatch) {
     const vals = addMatch[1]
       .split("&")
-      .map((s) => parseFloat(s.trim()))
+      .map((s) => Math.round(parseFloat(s.trim())))
       .filter((v) => !isNaN(v));
     found.add = vals.length ? vals[0] : null;
     if (vals.length > 1) {
