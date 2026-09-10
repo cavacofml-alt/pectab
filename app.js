@@ -59,14 +59,14 @@ function matchOne(physical, rec) {
   const reasons = [];
 
   if (physical.dir !== rec.dir) {
-    return { hardFail: true, reason: `dir físico (${physical.dir}) != ${rec.dir}` };
+    return { hardFail: true, reason: `orientação diferente: mediste ${physical.dir}, este PECTAB é ${rec.dir}` };
   }
   if (physical.st !== rec.st) {
-    return { hardFail: true, reason: `nº de talões físico (${physical.st}) != ${rec.st}` };
+    return { hardFail: true, reason: `nº de talões diferente: mediste ${physical.st}, este PECTAB tem ${rec.st}` };
   }
   const lenDelta = Math.abs(physical.len - rec.len);
   if (lenDelta > physical.lenTolerance) {
-    return { hardFail: true, reason: `len desvia ${lenDelta}mm (tolerância ${physical.lenTolerance}mm)` };
+    return { hardFail: true, reason: `comprimento total desvia ${lenDelta}mm (acima da tolerância de ${physical.lenTolerance}mm)` };
   }
 
   const deltas = {
@@ -97,10 +97,10 @@ function matchOne(physical, rec) {
 
   const declaredSum = sectionSum(rec);
   if (declaredSum !== rec.len) {
-    reasons.push(`aviso: len declarado (${rec.len}) != soma das secções (${declaredSum})`);
+    reasons.push(`O len declarado deste PECTAB (${rec.len}mm) não bate com a soma das suas secções (${declaredSum}mm) — ${Math.abs(declaredSum - rec.len)}mm de inconsistência já no próprio registo, antes de comparar com a tua medida.`);
   }
   if (rec.eq === false) {
-    reasons.push("aviso: eq=N — talões não são todos do mesmo tamanho, add pode não refletir cada talão");
+    reasons.push("Este PECTAB tem talões de tamanhos diferentes (eq=N) — o valor \"add\" acima é só uma referência nominal, não representa cada talão.");
   }
 
   return { hardFail: false, score, classification, deltas, reasons };
@@ -141,6 +141,25 @@ function classLabel(c) {
   return { exact: "Match exato", safe: "Compromisso seguro", risky: "Compromisso arriscado", recompile: "Requer compilação nova" }[c] || c;
 }
 
+function classExplain(c) {
+  return {
+    exact: "Medidas iguais em tudo. Podes usar sem receio.",
+    safe: "Pequenas diferenças. Deve funcionar, mas confirma com um teste físico antes de imprimir em massa.",
+    risky: "Diferenças consideráveis. Testa fisicamente antes de usar — pode desalinhar código de barras ou perfuração.",
+    recompile: "Diferenças grandes demais para confiar. Provavelmente precisas de pedir uma compilação nova.",
+  }[c] || "";
+}
+
+const FIELD_LABEL = { pax: "Passageiro (pax)", main: "Principal (main)", add: "Talão (add)", len: "Comprimento total (len)" };
+
+// frase legível para um desvio: delta = medido - PECTAB. positivo => PECTAB mais curto nesse campo.
+function deltaPhrase(field, delta) {
+  const label = FIELD_LABEL[field];
+  if (delta === 0) return `${label}: igual ao que mediste`;
+  const dir = delta > 0 ? "mais curto" : "mais comprido";
+  return `${label}: ${Math.abs(delta)}mm ${dir} no PECTAB do que mediste`;
+}
+
 function renderDbList() {
   const tbody = el("db-list-body");
   tbody.innerHTML = "";
@@ -179,13 +198,17 @@ function renderResults() {
   for (const r of state.results) {
     const card = document.createElement("div");
     card.className = "result-card" + (r.pectab.id === state.selected ? " active" : "");
+    const deltaItems = ["pax", "main", "add", "len"]
+      .map((f) => `<li${r.deltas[f] === 0 ? ' class="ok"' : ""}>${deltaPhrase(f, r.deltas[f])}</li>`)
+      .join("");
     card.innerHTML = `
       <div class="top">
         <span class="id">${r.pectab.id}</span>
         <span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>
       </div>
-      <div class="deltas">Δpax ${fmtDelta(r.deltas.pax)} · Δmain ${fmtDelta(r.deltas.main)} · Δadd ${fmtDelta(r.deltas.add)} · Δlen ${fmtDelta(r.deltas.len)}</div>
-      ${r.reasons.length ? `<div class="deltas">${r.reasons.join(" · ")}</div>` : ""}
+      <p class="result-explain">${classExplain(r.classification)}</p>
+      <ul class="result-deltas">${deltaItems}</ul>
+      ${r.reasons.length ? `<ul class="result-warnings">${r.reasons.map((w) => `<li>${w}</li>`).join("")}</ul>` : ""}
     `;
     card.addEventListener("click", () => {
       state.selected = r.pectab.id;
