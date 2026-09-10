@@ -367,7 +367,7 @@ function renderVisualizer() {
 
   // boundary mismatch annotations vs physical
   if (physical) {
-    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height, marginX, width);
+    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height, marginX);
     svg += markup;
     for (const d of deltas) {
       summaryLines.push(
@@ -418,7 +418,7 @@ function renderBar(sections, x0, y0, pxPerMm, h, label) {
   return out;
 }
 
-function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX, width) {
+function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX) {
   const physBoundaries = cumulativeBoundaries(physSections);
   const recBoundaries = cumulativeBoundaries(recSections);
   const n = Math.min(physBoundaries.length, recBoundaries.length) - 1; // ignore final edge (=total len, already shown)
@@ -438,11 +438,11 @@ function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX, wid
     if (Math.abs(delta) >= VIZ_RISK_MM && isNewPattern) {
       const x = marginX + physBoundaries[i] * pxPerMm;
       const label = physSections[i - 1] ? t("viz.boundary.end", { section: physSections[i - 1].label }) : t("viz.boundary.generic", { n: i });
-      const onRightHalf = x > width / 2;
-      const textX = onRightHalf ? x - 4 : x + 4;
-      const anchor = onRightHalf ? "end" : "start";
+      // só a linha no desenho — o texto ("fim X Δ-15mm") vive na lista
+      // de resumo por baixo, nunca dentro do SVG: a meio de duas barras
+      // empilhadas não há altura livre que não colida com o rótulo de
+      // uma secção ou da linha de baixo, seja qual for a fronteira.
       markup += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
-      markup += `<text x="${textX}" y="${20 + (height - 40) * (i / n)}" text-anchor="${anchor}" fill="#cf222e">${label} Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
       deltas.push({ label, delta });
     }
     prevIncrement = increment;
@@ -890,14 +890,10 @@ function init() {
     renderVisualizer();
   });
 
-  el("best-match-wrap").addEventListener("click", (ev) => {
-    const card = ev.target.closest(".hero-card");
-    if (!card) return;
-    state.selected = card.dataset.id;
-    renderResults();
-    renderDbList();
-    renderVisualizer();
-  });
+  // (sem listener de clique no próprio hero-card: ele já mostra
+  // state.selected, clicar lá dentro nunca muda esse valor — só
+  // partia o toggle do <details> do score, porque um re-render a meio
+  // do clique reconstrói o DOM e fecha-o outra vez no mesmo instante.)
 
   el("candidates-list").addEventListener("click", (ev) => {
     const row = ev.target.closest(".candidate-row");
