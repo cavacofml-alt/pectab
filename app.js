@@ -48,17 +48,19 @@ function commitDb() {
 
 function commitHistory() {
   saveHistory(state.history);
+  renderHistoryTable();
 }
 
 /* ---------- state ---------- */
 const state = {
   db: loadDb(),
   history: loadHistory(),
-  results: [], // { pectab, score, classification, deltas, reasons }
+  results: [], // { pectab, score, classification, deltas, breakdown, reasons }
   excluded: [], // { pectab, reason }
-  selected: null, // id of pectab shown in visualizer
+  selected: null, // id of pectab shown in visualizer/hero
   lastPhysical: null,
   orderOverride: null, // null = usa dir do registo selecionado; "pax-first" | "add-first" força
+  catalogFilter: { search: "", dir: "" },
 };
 
 /* ---------- matching engine ---------- */
@@ -87,11 +89,14 @@ function matchOne(physical, rec) {
     len: physical.len - rec.len,
   };
 
-  const penalty =
-    Math.abs(deltas.pax) * WEIGHTS.pax +
-    Math.abs(deltas.main) * WEIGHTS.main +
-    Math.abs(deltas.add) * WEIGHTS.add * Math.max(1, rec.st / 2) +
-    Math.abs(deltas.len) * WEIGHTS.len;
+  const addWeight = WEIGHTS.add * Math.max(1, rec.st / 2);
+  const breakdown = [
+    { field: "pax", delta: deltas.pax, weight: WEIGHTS.pax, impact: -Math.abs(deltas.pax) * WEIGHTS.pax },
+    { field: "main", delta: deltas.main, weight: WEIGHTS.main, impact: -Math.abs(deltas.main) * WEIGHTS.main },
+    { field: "add", delta: deltas.add, weight: addWeight, impact: -Math.abs(deltas.add) * addWeight },
+    { field: "len", delta: deltas.len, weight: WEIGHTS.len, impact: -Math.abs(deltas.len) * WEIGHTS.len },
+  ];
+  const penalty = -breakdown.reduce((sum, b) => sum + b.impact, 0);
 
   const score = Math.max(0, Math.round(100 - penalty));
 
@@ -114,7 +119,7 @@ function matchOne(physical, rec) {
     reasons.push({ key: "warn.eqN" });
   }
 
-  return { hardFail: false, score, classification, deltas, reasons };
+  return { hardFail: false, score, classification, deltas, breakdown, reasons };
 }
 
 function runMatching(physical) {
@@ -125,13 +130,21 @@ function runMatching(physical) {
     if (m.hardFail) {
       excluded.push({ pectab: rec, reason: m.reason });
     } else {
-      results.push({ pectab: rec, score: m.score, classification: m.classification, deltas: m.deltas, reasons: m.reasons });
+      results.push({ pectab: rec, score: m.score, classification: m.classification, deltas: m.deltas, breakdown: m.breakdown, reasons: m.reasons });
     }
   }
   results.sort((a, b) => b.score - a.score);
   state.results = results;
   state.excluded = excluded;
   state.lastPhysical = physical;
+}
+
+// classificação técnica (exact/safe/risky/recompile) -> decisão operacional
+// de 3 níveis, para a resposta "posso usar ou não" nunca ficar ambígua.
+const DECISION_LEVEL = { exact: "use", safe: "use", risky: "verify", recompile: "dontuse" };
+const DECISION_ICON = { use: "🟢", verify: "🟡", dontuse: "🔴" };
+function decisionFor(classification) {
+  return DECISION_LEVEL[classification] || "verify";
 }
 
 /* ---------- layout order for visualizer ---------- */
@@ -172,12 +185,30 @@ function deltaPhrase(field, delta) {
 function renderDbList() {
   const tbody = el("db-list-body");
   tbody.innerHTML = "";
+  const countHost = el("catalog-count");
+
   if (state.db.length === 0) {
     el("db-empty").hidden = false;
+    if (countHost) countHost.textContent = "";
     return;
   }
   el("db-empty").hidden = true;
-  for (const rec of state.db) {
+
+  const filter = state.catalogFilter;
+  const filtered = state.db.filter((rec) => {
+    if (filter.dir && rec.dir !== filter.dir) return false;
+    if (filter.search && !rec.id.toLowerCase().includes(filter.search.toLowerCase())) return false;
+    return true;
+  });
+
+  if (countHost) countHost.textContent = t("catalog.count", { shown: filtered.length, total: state.db.length });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${t("catalog.noMatch")}</td></tr>`;
+    return;
+  }
+
+  for (const rec of filtered) {
     const tr = document.createElement("tr");
     tr.className = rec.id === state.selected ? "selected" : "";
     tr.dataset.id = rec.id;
@@ -187,36 +218,83 @@ function renderDbList() {
   }
 }
 
-function renderResults() {
-  const wrap = el("results-wrap");
-  wrap.innerHTML = "";
+function checklistItem(labelKey, ok, extra) {
+  return `<div class="checklist-item ${ok ? "ok" : "warn"}"><span class="mark">${ok ? "✓" : "⚠"}</span> ${t(labelKey)}${extra ? ` <span class="extra">(${extra})</span>` : ""}</div>`;
+}
 
-  if (!state.lastPhysical) {
-    wrap.innerHTML = `<p class="empty-state">${t("results.empty.noSearch")}</p>`;
-    return;
-  }
+function scoreBreakdownTable(r) {
+  const rows = r.breakdown
+    .map(
+      (b) =>
+        `<tr><td>${fieldLabel(b.field)}</td><td>${fmtDelta(b.delta)}</td><td>×${b.weight.toFixed(2)}</td><td>${b.impact.toFixed(1)}</td></tr>`
+    )
+    .join("");
+  return `
+    <details class="score-breakdown">
+      <summary>${t("score.breakdown.title", { score: r.score })}</summary>
+      <table>
+        <thead><tr><th>${t("score.th.field")}</th><th>${t("score.th.diff")}</th><th>${t("score.th.weight")}</th><th>${t("score.th.impact")}</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="score-final">${t("score.final", { score: r.score })}</p>
+    </details>`;
+}
 
-  if (state.results.length === 0) {
-    wrap.innerHTML = `<p class="empty-state">${t("results.empty.noCandidates")}</p>`;
-  }
+function renderBestMatchHtml(r) {
+  const level = decisionFor(r.classification);
+  const isTopResult = state.results[0] && state.results[0].pectab.id === r.pectab.id;
+  const checklist = [
+    checklistItem("checklist.dir", true),
+    checklistItem("checklist.st", true),
+    checklistItem("checklist.len", r.deltas.len === 0, r.deltas.len !== 0 ? fmtDelta(r.deltas.len) : ""),
+    checklistItem("checklist.pax", r.deltas.pax === 0, r.deltas.pax !== 0 ? fmtDelta(r.deltas.pax) : ""),
+    checklistItem("checklist.main", r.deltas.main === 0, r.deltas.main !== 0 ? fmtDelta(r.deltas.main) : ""),
+    checklistItem("checklist.add", r.deltas.add === 0, r.deltas.add !== 0 ? fmtDelta(r.deltas.add) : ""),
+  ].join("");
 
-  for (const r of state.results) {
-    const card = document.createElement("div");
-    card.className = "result-card" + (r.pectab.id === state.selected ? " active" : "");
-    card.dataset.id = r.pectab.id;
-    const deltaItems = ["pax", "main", "add", "len"]
-      .map((f) => `<li${r.deltas[f] === 0 ? ' class="ok"' : ""}>${deltaPhrase(f, r.deltas[f])}</li>`)
-      .join("");
-    card.innerHTML = `
-      <div class="top">
-        <span class="id">${r.pectab.id}</span>
+  return `
+    <div class="hero-card" data-id="${r.pectab.id}">
+      <div class="hero-kicker">${t(isTopResult ? "hero.title.best" : "hero.title.selected")}</div>
+      <div class="decision-banner decision-${level}">${DECISION_ICON[level]} ${t(`decision.${level}`, { id: r.pectab.id })}</div>
+      <div class="hero-top">
+        <span class="hero-id">${r.pectab.id}</span>
         <span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>
       </div>
+      <div class="hero-subtitle">${t("hero.subtitle", { dir: r.pectab.dir, st: r.pectab.st, len: r.pectab.len })}</div>
       <p class="result-explain">${classExplain(r.classification)}</p>
-      <ul class="result-deltas">${deltaItems}</ul>
+      <div class="checklist-title">${t("checklist.title")}</div>
+      <div class="checklist-grid">${checklist}</div>
+      ${scoreBreakdownTable(r)}
       ${r.reasons.length ? `<ul class="result-warnings">${r.reasons.map((w) => `<li>${t(w.key, w.params)}</li>`).join("")}</ul>` : ""}
-    `;
-    wrap.appendChild(card);
+    </div>`;
+}
+
+function renderCandidateRowHtml(r) {
+  return `
+    <div class="candidate-row${r.pectab.id === state.selected ? " active" : ""}" data-id="${r.pectab.id}">
+      <span class="id">${r.pectab.id}</span>
+      <span class="badge ${r.classification}">${classLabel(r.classification)}</span>
+      <span class="score">${r.score}%</span>
+    </div>`;
+}
+
+function renderResults() {
+  const bestWrap = el("best-match-wrap");
+  const listWrap = el("candidates-list");
+
+  if (!state.lastPhysical) {
+    bestWrap.innerHTML = `<p class="empty-state">${t("results.empty.noSearch")}</p>`;
+    listWrap.innerHTML = "";
+  } else if (state.results.length === 0) {
+    bestWrap.innerHTML = `<p class="empty-state">${t("results.empty.noCandidates")}</p>`;
+    listWrap.innerHTML = "";
+  } else {
+    const heroResult = state.results.find((r) => r.pectab.id === state.selected) || state.results[0];
+    bestWrap.innerHTML = renderBestMatchHtml(heroResult);
+    const others = state.results.filter((r) => r.pectab.id !== heroResult.pectab.id);
+    listWrap.innerHTML = others.length
+      ? `<div class="candidates-title">${t("candidates.title")}</div>${others.map(renderCandidateRowHtml).join("")}`
+      : "";
   }
 
   const exWrap = el("excluded-wrap");
@@ -318,7 +396,10 @@ function renderBar(sections, x0, y0, pxPerMm, h, label) {
   for (const s of sections) {
     const w = Math.max(1, s.len * pxPerMm);
     out += `<rect x="${x}" y="${y0}" width="${w}" height="${h}" fill="${TYPE_COLOR[s.type]}"/>`;
-    if (w >= s.label.length * 6 + 4) {
+    const dims = `${s.label} ${s.len}mm`;
+    if (w >= dims.length * 5.5 + 4) {
+      out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${dims}</text>`;
+    } else if (w >= s.label.length * 6 + 4) {
       out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${s.label}</text>`;
     }
     x += w;
@@ -380,7 +461,7 @@ function cumulativeBoundaries(sections) {
   return bounds;
 }
 
-/* ---------- history ---------- */
+/* ---------- history (por PECTAB selecionado) ---------- */
 function renderHistory() {
   const wrap = el("history-wrap");
   wrap.innerHTML = "";
@@ -407,6 +488,46 @@ function renderHistory() {
     `;
     wrap.appendChild(div);
   }
+}
+
+/* ---------- histórico completo (todos os PECTABs, auditoria) ---------- */
+function renderHistoryTable() {
+  const tbody = el("history-table-body");
+  const empty = el("history-table-empty");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  const rows = [];
+  for (const pectabId in state.history) {
+    for (const e of state.history[pectabId]) rows.push({ pectabId, ...e });
+  }
+  rows.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  if (rows.length === 0) {
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.date || ""}</td>
+      <td>${r.pectabId}</td>
+      <td><span class="badge ${r.result === "ok" ? "safe" : "recompile"}">${r.result === "ok" ? t("history.result.ok") : t("history.result.fail")}</span></td>
+      <td>${escapeHtml(r.airport || "")}</td>
+      <td>${escapeHtml(r.note || "")}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function exportHistoryCsv() {
+  const rows = [["date", "pectab", "result", "airport", "note"]];
+  for (const pectabId in state.history) {
+    for (const e of state.history[pectabId]) rows.push([e.date || "", pectabId, e.result || "", e.airport || "", e.note || ""]);
+  }
+  const csv = rows.map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  downloadText(`historico-pectab-${Date.now()}.csv`, csv, "text/csv;charset=utf-8");
 }
 
 function escapeHtml(s) {
@@ -452,8 +573,45 @@ function exportCompilationRequest() {
   downloadText(`pedido-compilacao-${Date.now()}.txt`, lines.join("\n"));
 }
 
-function downloadText(filename, text) {
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+/* ---------- validation report export ---------- */
+function exportValidationReport() {
+  const physical = state.lastPhysical;
+  if (!physical) {
+    toast(t("toast.needPhysicalFirst"));
+    return;
+  }
+  const r = state.results.find((r) => r.pectab.id === state.selected) || state.results[0];
+  if (!r) {
+    toast(t("report.noCandidate"));
+    return;
+  }
+  const level = decisionFor(r.classification);
+  const lines = [
+    t("report.title"),
+    t("report.generated", { date: new Date().toISOString() }),
+    "",
+    t("compile.physicalHeading"),
+    `  dir=${physical.dir} st=${physical.st} len=${physical.len} pax=${physical.pax} main=${physical.main} add=${physical.add}`,
+    "",
+    t("report.pectabHeading", { id: r.pectab.id }),
+    `  dir=${r.pectab.dir} st=${r.pectab.st} len=${r.pectab.len} pax=${r.pectab.pax} main=${r.pectab.main} add=${r.pectab.add}`,
+    "",
+    t("report.scoreBreakdown"),
+    ...r.breakdown.map((b) => `  ${fieldLabel(b.field)}: Δ${b.delta}mm × ${b.weight.toFixed(2)} = ${b.impact.toFixed(1)}`),
+    `  ${t("report.finalScore", { score: r.score })}`,
+    "",
+    `  ${classLabel(r.classification)} — ${classExplain(r.classification)}`,
+    `  ${t(`decision.${level}`, { id: r.pectab.id })}`,
+  ];
+  if (r.reasons.length) {
+    lines.push("", t("report.warnings"));
+    r.reasons.forEach((w) => lines.push(`  - ${t(w.key, w.params)}`));
+  }
+  downloadText(`relatorio-validacao-${r.pectab.id}-${Date.now()}.txt`, lines.join("\n"));
+}
+
+function downloadText(filename, text, mime) {
+  const blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -682,6 +840,7 @@ function renderAll() {
   renderResults();
   renderVisualizer();
   renderHistory();
+  renderHistoryTable();
 }
 
 function init() {
@@ -725,16 +884,25 @@ function init() {
 
   el("db-list-body").addEventListener("click", (ev) => {
     const tr = ev.target.closest("tr");
-    if (!tr) return;
+    if (!tr || !tr.dataset.id) return;
     state.selected = tr.dataset.id;
     renderDbList();
     renderVisualizer();
   });
 
-  el("results-wrap").addEventListener("click", (ev) => {
-    const card = ev.target.closest(".result-card");
+  el("best-match-wrap").addEventListener("click", (ev) => {
+    const card = ev.target.closest(".hero-card");
     if (!card) return;
     state.selected = card.dataset.id;
+    renderResults();
+    renderDbList();
+    renderVisualizer();
+  });
+
+  el("candidates-list").addEventListener("click", (ev) => {
+    const row = ev.target.closest(".candidate-row");
+    if (!row) return;
+    state.selected = row.dataset.id;
     renderResults();
     renderDbList();
     renderVisualizer();
@@ -764,6 +932,19 @@ function init() {
 
   el("load-sample").addEventListener("click", () => loadFromArray(PECTAB_SAMPLE, "toast.label.sample"));
   el("load-catalog").addEventListener("click", () => loadFromArray(PECTAB_CATALOG, "toast.label.catalog"));
+
+  el("catalog-search").addEventListener("input", (ev) => {
+    state.catalogFilter.search = ev.target.value;
+    renderDbList();
+  });
+
+  document.querySelectorAll(".catalog-dir-filter").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.catalogFilter.dir = btn.dataset.dir;
+      document.querySelectorAll(".catalog-dir-filter").forEach((b) => b.classList.toggle("active", b === btn));
+      renderDbList();
+    });
+  });
 
   el("import-json-btn").addEventListener("click", () => {
     const text = el("import-json-text").value.trim();
@@ -803,6 +984,8 @@ function init() {
   });
 
   el("export-compile-btn").addEventListener("click", exportCompilationRequest);
+  el("export-report-btn").addEventListener("click", exportValidationReport);
+  el("export-history-csv-btn").addEventListener("click", exportHistoryCsv);
 
   el("import-docx-btn").addEventListener("click", () => {
     const file = el("import-docx-file").files[0];

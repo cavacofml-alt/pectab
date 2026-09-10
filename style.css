@@ -37,20 +37,30 @@ body {
   line-height: 1.45;
 }
 
+/* header fica sempre escuro, de propósito — não segue o tema claro/escuro
+   do resto da página. É a identidade fixa da ferramenta, como a barra de
+   título de uma app de operações. */
 header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
+  background: #12172a;
+  border-bottom: 1px solid #262d47;
 }
 
 header h1 {
   margin: 0 0 4px;
-  font-size: 18px;
+  font-size: 19px;
+  color: #f3f5fa;
+  letter-spacing: 0.02em;
 }
 
 header p {
   margin: 0;
-  color: var(--muted);
+  color: #9aa4c2;
 }
+
+header .lang-switch { border-color: #384166; }
+header .lang-btn { color: #9aa4c2; }
+header .lang-btn.active { background: var(--accent); color: #fff; }
 
 .header-row {
   display: flex;
@@ -83,17 +93,45 @@ header p {
   color: #fff;
 }
 
-main {
-  display: grid;
-  grid-template-columns: minmax(280px, 380px) 1fr;
+/* fluxo único, de cima para baixo: Medir → Resultado → Validação visual
+   → (Administração, secundária). Nada de dashboard em grelha — a ordem
+   é a sequência de trabalho real. */
+main.zones {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   padding: 16px;
-  max-width: 1400px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
-@media (max-width: 820px) {
-  main { grid-template-columns: 1fr; }
+.zone > h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-transform: none;
+  margin: 0 0 12px;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.admin-grid .panel { margin-bottom: 0; }
+/* painéis do admin são mais estreitos do que as zonas principais — a
+   grelha de 3 colunas dos campos fica sem espaço para textos como "PAX
+   primeiro"; 2 colunas dá-lhes espaço para não cortar o texto. */
+.admin-grid .field-grid { grid-template-columns: repeat(2, 1fr); }
+
+.admin-zone > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 2px 0;
 }
 
 .panel {
@@ -110,6 +148,14 @@ main {
   letter-spacing: 0.04em;
   color: var(--muted);
   margin: 0 0 10px;
+}
+
+.panel h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 8px;
 }
 
 .field-grid {
@@ -195,25 +241,9 @@ th { color: var(--muted); font-weight: 600; }
 .badge.recompile { background: rgba(207,34,46,0.12); color: var(--bad); }
 .badge.excluded { background: rgba(154,164,178,0.15); color: var(--muted); }
 
-.result-card {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-.result-card:hover { border-color: var(--accent); }
-.result-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.result-card .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.result-card .id { font-family: var(--mono); font-weight: 600; }
-.result-card .deltas { color: var(--muted); font-size: 11.5px; margin-top: 4px; }
+.hero-card .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
 .result-explain { margin: 6px 0 8px; font-size: 12.5px; color: var(--text); }
-
-.result-deltas { list-style: none; margin: 0 0 6px; padding: 0; font-size: 12.5px; }
-.result-deltas li { padding: 2px 0; }
-.result-deltas li.ok { color: var(--muted); }
-.result-deltas li:not(.ok) { color: var(--warn); font-weight: 600; }
 
 .result-warnings { list-style: none; margin: 8px 0 0; padding: 8px 0 0; border-top: 1px dashed var(--border); font-size: 12px; color: var(--muted); }
 .result-warnings li { padding: 2px 0; padding-left: 16px; position: relative; }
@@ -221,6 +251,107 @@ th { color: var(--muted); font-weight: 600; }
 
 .excluded-list { color: var(--muted); font-size: 12px; }
 .excluded-list li { margin-bottom: 4px; }
+
+/* ---------- Best Match hero ---------- */
+.hero-card {
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.hero-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.decision-banner {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+.decision-use { background: rgba(26,127,55,0.15); color: var(--ok); }
+.decision-verify { background: rgba(154,103,0,0.15); color: var(--warn); }
+.decision-dontuse { background: rgba(207,34,46,0.15); color: var(--bad); }
+
+.hero-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.hero-id { font-family: var(--mono); font-size: 28px; font-weight: 700; }
+.hero-subtitle { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.checklist-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 12px 0 6px;
+  text-transform: uppercase;
+}
+
+.checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 4px 12px;
+  font-size: 12.5px;
+}
+.checklist-item .mark { display: inline-block; width: 16px; font-weight: 700; }
+.checklist-item.ok { color: var(--muted); }
+.checklist-item.warn { color: var(--warn); font-weight: 600; }
+.checklist-item .extra { color: inherit; font-weight: 400; opacity: 0.85; }
+
+.score-breakdown { margin-top: 12px; font-size: 12px; }
+.score-breakdown summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.score-breakdown table { margin-top: 8px; }
+.score-final { font-weight: 700; margin: 8px 0 0; }
+
+/* ---------- lista compacta de outros candidatos ---------- */
+.candidates-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 4px 0 4px;
+}
+
+.candidate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 12.5px;
+}
+.candidate-row:hover { background: rgba(127,127,127,0.08); }
+.candidate-row.active { background: rgba(47,111,235,0.1); }
+.candidate-row .id { font-family: var(--mono); font-weight: 600; flex: 1; }
+.candidate-row .score { font-family: var(--mono); font-weight: 700; min-width: 36px; text-align: right; }
+
+/* ---------- filtro do catálogo ---------- */
+.catalog-dir-filter {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.catalog-dir-filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ---------- avançado (tolerância) ---------- */
+details.advanced summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+button.primary-action { font-size: 15px; font-weight: 700; padding: 10px 20px; }
 
 .viz-wrap { overflow-x: auto; }
 svg text { fill: var(--text); font-size: 10px; font-family: var(--mono); }

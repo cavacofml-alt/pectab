@@ -74,6 +74,66 @@ const I18N = {
     "field.dest.tooltip": "Nº de destinos que este PECTAB suporta (informativo)",
     "field.tolerance.tooltip": "Não vem do teu formulário — é só desta ferramenta. Quantos mm de diferença no len ainda são aceites antes de excluir um candidato. 0 = exige igual.",
     "field.eqBadge.title": "talões não são todos iguais",
+    "field.dir.label": "Direção de impressão",
+    "option.dirPax": "PAX primeiro",
+    "option.dirAdd": "ADD primeiro",
+    "advanced.title": "Avançado (tolerância)",
+
+    "zone.measure.title": "① MEDIR",
+    "zone.match.title": "② RESULTADO DO MATCH",
+    "zone.visual.title": "③ VALIDAÇÃO VISUAL",
+    "zone.admin.title": "Administração (catálogo, importar, adicionar, histórico completo)",
+
+    "hero.title.best": "MELHOR CANDIDATO",
+    "hero.title.selected": "CANDIDATO SELECIONADO",
+    "hero.subtitle": "{dir} · {st} talões · {len}mm",
+    "hero.btnView": "Ver na validação visual ↓",
+
+    "checklist.title": "Porque bate certo",
+    "checklist.dir": "Direção",
+    "checklist.st": "Nº de talões",
+    "checklist.len": "Comprimento total",
+    "checklist.pax": "Passageiro",
+    "checklist.main": "Principal",
+    "checklist.add": "Talão",
+
+    "decision.use": "USAR PECTAB {id}",
+    "decision.verify": "VERIFICAR ANTES DE USAR",
+    "decision.dontuse": "NÃO USAR — PEDIR COMPILAÇÃO NOVA",
+
+    "score.breakdown.title": "Ver como se calculou o score ({score})",
+    "score.th.field": "Campo",
+    "score.th.diff": "Diferença",
+    "score.th.weight": "Peso",
+    "score.th.impact": "Impacto",
+    "score.final": "Score final: {score}",
+
+    "candidates.title": "Outros candidatos",
+    "candidates.noneOther": "Não há outros candidatos.",
+    "candidates.viewHint": "clica para veres na validação visual",
+
+    "catalog.searchPlaceholder": "Procurar por ID…",
+    "catalog.filter.all": "Todos",
+    "catalog.count": "{shown} de {total} PECTABs mostrados",
+    "catalog.noMatch": "Nenhum PECTAB corresponde à busca/filtro.",
+
+    "history.table.title": "Histórico completo",
+    "history.table.th.date": "Data",
+    "history.table.th.pectab": "PECTAB",
+    "history.table.th.result": "Resultado",
+    "history.table.th.airport": "Aeroporto/handler",
+    "history.table.th.note": "Nota",
+    "history.table.empty": "Sem testes registados ainda.",
+    "btn.exportHistoryCsv": "Exportar CSV",
+
+    "btn.exportReport": "Gerar relatório de validação",
+    "report.noCandidate": "Procura um match primeiro.",
+    "report.title": "RELATÓRIO DE VALIDAÇÃO PECTAB",
+    "report.generated": "Gerado: {date}",
+    "report.pectabHeading": "PECTAB avaliado: {id}",
+    "report.scoreBreakdown": "Cálculo do score:",
+    "report.finalScore": "Score final: {score}",
+    "report.warnings": "Avisos:",
 
     "class.exact": "Match exato",
     "class.safe": "Compromisso seguro",
@@ -224,6 +284,66 @@ const I18N = {
     "field.dest.tooltip": "Number of destinations this PECTAB supports (informational)",
     "field.tolerance.tooltip": "Not on your form — this is a setting of the tool itself. How many mm of len difference are still accepted before excluding a candidate. 0 = requires an exact match.",
     "field.eqBadge.title": "stubs are not all the same size",
+    "field.dir.label": "Print direction",
+    "option.dirPax": "PAX first",
+    "option.dirAdd": "ADD first",
+    "advanced.title": "Advanced (tolerance)",
+
+    "zone.measure.title": "① MEASURE",
+    "zone.match.title": "② MATCH RESULT",
+    "zone.visual.title": "③ VISUAL VALIDATION",
+    "zone.admin.title": "Admin (catalog, import, add, full history)",
+
+    "hero.title.best": "BEST MATCH",
+    "hero.title.selected": "SELECTED CANDIDATE",
+    "hero.subtitle": "{dir} · {st} stubs · {len}mm",
+    "hero.btnView": "View in visual validation ↓",
+
+    "checklist.title": "Why this matches",
+    "checklist.dir": "Direction",
+    "checklist.st": "Stub count",
+    "checklist.len": "Total length",
+    "checklist.pax": "Passenger",
+    "checklist.main": "Main",
+    "checklist.add": "Stub",
+
+    "decision.use": "USE PECTAB {id}",
+    "decision.verify": "VERIFY BEFORE USE",
+    "decision.dontuse": "DO NOT USE — RECOMPILE REQUIRED",
+
+    "score.breakdown.title": "See how the score ({score}) was calculated",
+    "score.th.field": "Field",
+    "score.th.diff": "Difference",
+    "score.th.weight": "Weight",
+    "score.th.impact": "Impact",
+    "score.final": "Final score: {score}",
+
+    "candidates.title": "Other candidates",
+    "candidates.noneOther": "No other candidates.",
+    "candidates.viewHint": "click to view in visual validation",
+
+    "catalog.searchPlaceholder": "Search by ID…",
+    "catalog.filter.all": "All",
+    "catalog.count": "{shown} of {total} PECTABs shown",
+    "catalog.noMatch": "No PECTAB matches the search/filter.",
+
+    "history.table.title": "Full history",
+    "history.table.th.date": "Date",
+    "history.table.th.pectab": "PECTAB",
+    "history.table.th.result": "Result",
+    "history.table.th.airport": "Airport/handler",
+    "history.table.th.note": "Note",
+    "history.table.empty": "No tests logged yet.",
+    "btn.exportHistoryCsv": "Export CSV",
+
+    "btn.exportReport": "Generate validation report",
+    "report.noCandidate": "Search for a match first.",
+    "report.title": "PECTAB VALIDATION REPORT",
+    "report.generated": "Generated: {date}",
+    "report.pectabHeading": "PECTAB evaluated: {id}",
+    "report.scoreBreakdown": "Score calculation:",
+    "report.finalScore": "Final score: {score}",
+    "report.warnings": "Warnings:",
 
     "class.exact": "Exact match",
     "class.safe": "Safe compromise",
@@ -336,6 +456,9 @@ function applyStaticI18n() {
   });
   document.querySelectorAll("[data-i18n-title]").forEach((node) => {
     node.title = t(node.getAttribute("data-i18n-title"));
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.placeholder = t(node.getAttribute("data-i18n-placeholder"));
   });
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.getAttribute("data-lang") === getLang());

@@ -21,61 +21,43 @@
   </div>
 </header>
 
-<main>
-  <div>
-    <section class="panel">
-      <h2 data-i18n="panel.db.title">Base de PECTABs (local)</h2>
-      <div class="pectab-list">
-        <div class="table-wrap">
-        <table>
-          <thead><tr><th>ID</th><th>dir</th><th>len</th><th>st</th><th></th></tr></thead>
-          <tbody id="db-list-body"></tbody>
-        </table>
-        </div>
-        <p class="empty-state" id="db-empty" data-i18n="db.empty">Base vazia. Carrega o catálogo real (ADD+PAX) ou adiciona um PECTAB abaixo.</p>
-      </div>
-      <div class="row mt">
-        <button type="button" class="secondary" id="load-catalog" data-i18n="btn.loadCatalog">Carregar catálogo (ADD+PAX)</button>
-        <button type="button" class="secondary" id="load-sample" data-i18n="btn.loadSample">Carregar exemplo fictício</button>
-        <button type="button" class="ghost" id="export-db-btn" data-i18n="btn.exportDb">Exportar base (JSON)</button>
-        <button type="button" class="ghost" id="delete-selected" data-i18n="btn.deleteSelected">Apagar selecionado</button>
-      </div>
-    </section>
+<main class="zones">
+  <section class="panel zone">
+    <h2 data-i18n="zone.measure.title">① MEDIR</h2>
 
-    <section class="panel">
-      <h2 data-i18n="panel.addPectab.title">Adicionar PECTAB</h2>
-      <form id="add-pectab-form">
+    <div class="row">
+      <input type="file" id="import-docx-file" accept=".docx">
+      <button type="button" class="secondary" id="import-docx-btn" data-i18n="btn.importDocx">Preencher a partir do .docx</button>
+    </div>
+    <p class="empty-state" id="import-docx-status" data-i18n="docx.statusDefault">
+      Deteção automática, best-effort — confirma sempre os valores antes
+      de procurar match. Funciona offline, sem enviar o ficheiro para
+      lado nenhum.
+    </p>
+
+    <form id="match-form">
+      <div class="field-grid">
+        <div><label for="phys-dir" data-i18n="field.dir.label" data-i18n-title="field.dir.tooltip" title="">Direção de impressão</label><select id="phys-dir"><option value="PAX" data-i18n="option.dirPax">PAX primeiro</option><option value="ADD" data-i18n="option.dirAdd">ADD primeiro</option></select></div>
+        <div><label for="phys-st" data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="phys-st" type="number" min="0" value="0" required></div>
+        <div><label for="phys-len" data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="phys-len" type="number" min="0" required></div>
+        <div><label for="phys-pax" data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
+        <div><label for="phys-main" data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="phys-main" type="number" min="0" required></div>
+        <div><label for="phys-add" data-i18n-title="field.add.tooltip.phys" title="">add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
+      </div>
+      <details class="advanced">
+        <summary data-i18n="advanced.title">Avançado (tolerância)</summary>
         <div class="field-grid">
-          <div><label for="new-id" data-i18n="label.id">ID</label><input id="new-id" required></div>
-          <div><label for="new-dir" data-i18n-title="field.dir.tooltip" title="">dir</label><select id="new-dir"><option>PAX</option><option>ADD</option></select></div>
-          <div><label for="new-st" data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="new-st" type="number" min="0" value="0" required></div>
-          <div><label for="new-len" data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="new-len" type="number" min="0" required></div>
-          <div><label for="new-pax" data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
-          <div><label for="new-main" data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="new-main" type="number" min="0" required></div>
-          <div><label for="new-add" data-i18n-title="field.add.tooltip.new" title="">add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
-          <div><label for="new-eq" data-i18n-title="field.eq.tooltip" title="">eq (talões iguais)</label><select id="new-eq"><option value="Y">Y</option><option value="N">N</option></select></div>
-          <div><label for="new-dest" data-i18n-title="field.dest.tooltip" title="">dest</label><input id="new-dest" type="number" min="0"></div>
+          <div><label for="phys-tolerance" data-i18n="label.tolerance" data-i18n-title="field.tolerance.tooltip" title="">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
         </div>
-        <label class="mt" for="new-remarks" data-i18n="label.remarks">remarks</label>
-        <input id="new-remarks">
-        <div class="row mt"><button type="submit" data-i18n="btn.addToDb">Adicionar à base</button></div>
-      </form>
-    </section>
+      </details>
+      <div class="row mt">
+        <button type="submit" class="primary-action" data-i18n="btn.searchMatch">Procurar match</button>
+      </div>
+    </form>
 
-    <section class="panel">
-      <h2 data-i18n="panel.import.title">Importar</h2>
-      <label for="import-json-file" data-i18n="label.jsonFile">Ficheiro JSON</label>
-      <input type="file" id="import-json-file" accept="application/json">
-      <label class="mt" for="import-json-text" data-i18n="label.orPasteJson">ou cola JSON (array de PECTABs)</label>
-      <textarea id="import-json-text" rows="4"></textarea>
-      <div class="row mt"><button type="button" class="secondary" id="import-json-btn" data-i18n="btn.importJson">Importar / atualizar</button></div>
-    </section>
-  </div>
-
-  <div>
-    <section class="panel">
-      <h2 data-i18n="panel.legend.title">Como ler o teu formulário de medidas</h2>
-      <p class="empty-state" style="margin-top:0" data-i18n="legend.intro">
+    <details class="mt">
+      <summary data-i18n="panel.legend.title">Como ler o teu formulário de medidas</summary>
+      <p class="empty-state" data-i18n="legend.intro">
         Formulários de medição em inglês usam termos diferentes dos campos
         aqui. Equivalências mais comuns:
       </p>
@@ -107,67 +89,44 @@
         <code>len</code> medido e o <code>len</code> de um PECTAB ainda são
         aceites antes de o excluir da lista. <code>0</code> = exige igual.
       </p>
-    </section>
+    </details>
+  </section>
 
-    <section class="panel">
-      <h2 data-i18n="panel.physical.title">Medida física (rolo testado)</h2>
-      <div class="row">
-        <input type="file" id="import-docx-file" accept=".docx">
-        <button type="button" class="secondary" id="import-docx-btn" data-i18n="btn.importDocx">Preencher a partir do .docx</button>
-      </div>
-      <p class="empty-state" id="import-docx-status" data-i18n="docx.statusDefault">
-        Deteção automática, best-effort — confirma sempre os valores antes
-        de procurar match. Funciona offline, sem enviar o ficheiro para
-        lado nenhum.
-      </p>
-      <form id="match-form">
-        <div class="field-grid">
-          <div><label for="phys-dir" data-i18n-title="field.dir.tooltip" title="">dir</label><select id="phys-dir"><option>PAX</option><option>ADD</option></select></div>
-          <div><label for="phys-st" data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="phys-st" type="number" min="0" value="0" required></div>
-          <div><label for="phys-len" data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="phys-len" type="number" min="0" required></div>
-          <div><label for="phys-pax" data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
-          <div><label for="phys-main" data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="phys-main" type="number" min="0" required></div>
-          <div><label for="phys-add" data-i18n-title="field.add.tooltip.phys" title="">add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
-          <div><label for="phys-tolerance" data-i18n="label.tolerance" data-i18n-title="field.tolerance.tooltip" title="">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
-        </div>
-        <div class="row mt">
-          <button type="submit" data-i18n="btn.searchMatch">Procurar match</button>
-          <button type="button" class="ghost" id="export-compile-btn" data-i18n="btn.exportCompile">Exportar pedido de compilação</button>
-        </div>
-      </form>
-    </section>
+  <section class="panel zone">
+    <h2 data-i18n="zone.match.title">② RESULTADO DO MATCH</h2>
+    <div id="best-match-wrap"></div>
+    <div id="candidates-list"></div>
+    <details class="mt">
+      <summary data-i18n="excluded.summary">Excluídos</summary>
+      <div id="excluded-wrap"></div>
+    </details>
+    <div class="row mt">
+      <button type="button" class="ghost" id="export-compile-btn" data-i18n="btn.exportCompile">Exportar pedido de compilação</button>
+      <button type="button" class="ghost" id="export-report-btn" data-i18n="btn.exportReport">Gerar relatório de validação</button>
+    </div>
+  </section>
 
-    <section class="panel">
-      <h2 data-i18n="panel.results.title">Candidatos</h2>
-      <div id="results-wrap"></div>
-      <details class="mt">
-        <summary data-i18n="excluded.summary">Excluídos</summary>
-        <div id="excluded-wrap"></div>
-      </details>
-    </section>
+  <section class="panel zone zone-visual">
+    <h2 data-i18n="zone.visual.title">③ VALIDAÇÃO VISUAL</h2>
+    <div class="row between">
+      <label for="order-toggle" style="margin:0" data-i18n="label.printOrder">Ordem de impressão</label>
+      <select id="order-toggle" style="width:auto">
+        <option value="" data-i18n="option.auto">automática (por dir)</option>
+        <option value="pax-first" data-i18n="option.paxFirst">forçar PAX primeiro</option>
+        <option value="add-first" data-i18n="option.addFirst">forçar ADD primeiro</option>
+      </select>
+    </div>
+    <div class="viz-wrap mt" id="viz-svg"></div>
+    <div class="mt" id="viz-summary"></div>
+    <div class="viz-legend">
+      <span><span class="swatch" style="background:#FFC000"></span>MAIN</span>
+      <span><span class="swatch" style="background:#00B050"></span>PAX</span>
+      <span><span class="swatch" style="background:#00B0F0"></span><span data-i18n="viz.legend.add">ADD (talão)</span></span>
+      <span data-i18n="viz.legend.cutLines">A/B = pontas da etiqueta · linha preta = corte entre secções</span>
+    </div>
 
-    <section class="panel">
-      <h2 data-i18n="panel.viz.title">Visualizador</h2>
-      <div class="row between">
-        <label for="order-toggle" style="margin:0" data-i18n="label.printOrder">Ordem de impressão</label>
-        <select id="order-toggle" style="width:auto">
-          <option value="" data-i18n="option.auto">automática (por dir)</option>
-          <option value="pax-first" data-i18n="option.paxFirst">forçar PAX primeiro</option>
-          <option value="add-first" data-i18n="option.addFirst">forçar ADD primeiro</option>
-        </select>
-      </div>
-      <div class="viz-wrap mt" id="viz-svg"></div>
-      <div class="mt" id="viz-summary"></div>
-      <div class="viz-legend">
-        <span><span class="swatch" style="background:#FFC000"></span>MAIN</span>
-        <span><span class="swatch" style="background:#00B050"></span>PAX</span>
-        <span><span class="swatch" style="background:#00B0F0"></span><span data-i18n="viz.legend.add">ADD (talão)</span></span>
-        <span data-i18n="viz.legend.cutLines">A/B = pontas da etiqueta · linha preta = corte entre secções</span>
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2 data-i18n="panel.history.title">Histórico de testes</h2>
+    <div class="mt">
+      <h3 data-i18n="panel.history.title">Histórico de testes</h3>
       <div id="history-wrap"></div>
       <form id="history-form" class="mt" hidden>
         <div class="field-grid">
@@ -179,8 +138,87 @@
         <input id="hist-note">
         <div class="row mt"><button type="submit" data-i18n="btn.registerTest">Registar teste</button></div>
       </form>
-    </section>
-  </div>
+    </div>
+  </section>
+
+  <details class="panel admin-zone">
+    <summary data-i18n="zone.admin.title">Administração (catálogo, importar, adicionar, histórico completo)</summary>
+
+    <div class="admin-grid">
+      <div class="panel">
+        <h2 data-i18n="panel.db.title">Base de PECTABs (local)</h2>
+        <div class="row">
+          <input type="search" id="catalog-search" data-i18n-placeholder="catalog.searchPlaceholder" placeholder="Procurar por ID…">
+          <button type="button" class="catalog-dir-filter active" data-dir="" data-i18n="catalog.filter.all">Todos</button>
+          <button type="button" class="catalog-dir-filter" data-dir="PAX">PAX</button>
+          <button type="button" class="catalog-dir-filter" data-dir="ADD">ADD</button>
+        </div>
+        <p class="empty-state" id="catalog-count"></p>
+        <div class="pectab-list">
+          <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>dir</th><th>len</th><th>st</th><th></th></tr></thead>
+            <tbody id="db-list-body"></tbody>
+          </table>
+          </div>
+          <p class="empty-state" id="db-empty" data-i18n="db.empty">Base vazia. Carrega o catálogo real (ADD+PAX) ou adiciona um PECTAB abaixo.</p>
+        </div>
+        <div class="row mt">
+          <button type="button" class="secondary" id="load-catalog" data-i18n="btn.loadCatalog">Carregar catálogo (ADD+PAX)</button>
+          <button type="button" class="secondary" id="load-sample" data-i18n="btn.loadSample">Carregar exemplo fictício</button>
+          <button type="button" class="ghost" id="export-db-btn" data-i18n="btn.exportDb">Exportar base (JSON)</button>
+          <button type="button" class="ghost" id="delete-selected" data-i18n="btn.deleteSelected">Apagar selecionado</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="panel.addPectab.title">Adicionar PECTAB</h2>
+        <form id="add-pectab-form">
+          <div class="field-grid">
+            <div><label for="new-id" data-i18n="label.id">ID</label><input id="new-id" required></div>
+            <div><label for="new-dir" data-i18n="field.dir.label" data-i18n-title="field.dir.tooltip" title="">Direção de impressão</label><select id="new-dir"><option value="PAX" data-i18n="option.dirPax">PAX primeiro</option><option value="ADD" data-i18n="option.dirAdd">ADD primeiro</option></select></div>
+            <div><label for="new-st" data-i18n-title="field.st.tooltip" title="">st (talões)</label><input id="new-st" type="number" min="0" value="0" required></div>
+            <div><label for="new-len" data-i18n-title="field.len.tooltip" title="">len (mm)</label><input id="new-len" type="number" min="0" required></div>
+            <div><label for="new-pax" data-i18n-title="field.pax.tooltip" title="">pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
+            <div><label for="new-main" data-i18n-title="field.main.tooltip" title="">main (mm)</label><input id="new-main" type="number" min="0" required></div>
+            <div><label for="new-add" data-i18n-title="field.add.tooltip.new" title="">add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
+            <div><label for="new-eq" data-i18n-title="field.eq.tooltip" title="">eq (talões iguais)</label><select id="new-eq"><option value="Y">Y</option><option value="N">N</option></select></div>
+            <div><label for="new-dest" data-i18n-title="field.dest.tooltip" title="">dest</label><input id="new-dest" type="number" min="0"></div>
+          </div>
+          <label class="mt" for="new-remarks" data-i18n="label.remarks">remarks</label>
+          <input id="new-remarks">
+          <div class="row mt"><button type="submit" data-i18n="btn.addToDb">Adicionar à base</button></div>
+        </form>
+
+        <h2 class="mt" data-i18n="panel.import.title">Importar</h2>
+        <label for="import-json-file" data-i18n="label.jsonFile">Ficheiro JSON</label>
+        <input type="file" id="import-json-file" accept="application/json">
+        <label class="mt" for="import-json-text" data-i18n="label.orPasteJson">ou cola JSON (array de PECTABs)</label>
+        <textarea id="import-json-text" rows="4"></textarea>
+        <div class="row mt"><button type="button" class="secondary" id="import-json-btn" data-i18n="btn.importJson">Importar / atualizar</button></div>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="history.table.title">Histórico completo</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th data-i18n="history.table.th.date">Data</th>
+              <th data-i18n="history.table.th.pectab">PECTAB</th>
+              <th data-i18n="history.table.th.result">Resultado</th>
+              <th data-i18n="history.table.th.airport">Aeroporto/handler</th>
+              <th data-i18n="history.table.th.note">Nota</th>
+            </tr></thead>
+            <tbody id="history-table-body"></tbody>
+          </table>
+        </div>
+        <p class="empty-state" id="history-table-empty" data-i18n="history.table.empty">Sem testes registados ainda.</p>
+        <div class="row mt">
+          <button type="button" class="ghost" id="export-history-csv-btn" data-i18n="btn.exportHistoryCsv">Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+  </details>
 </main>
 
 <script src="i18n.js"></script>

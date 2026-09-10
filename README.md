@@ -9,6 +9,31 @@ PECTAB existente no DCS às cegas, imprimir, e só descobrir em papel que o
 `len` declarado não bate com a soma das secções, ou que a fronteira
 stub/main não coincide com a perfuração física do rolo.
 
+## Estrutura da página
+
+A página segue o fluxo de trabalho real, de cima para baixo, não uma
+lista de painéis administrativos:
+
+1. **① Medir** — formulário de medida física (com importação de `.docx`
+   e a legenda de tradução de termos, colapsada).
+2. **② Resultado do match** — o "melhor candidato" em destaque (cartão
+   com banner de decisão operacional, checklist do porquê bate certo, e
+   o cálculo do score aberto por detalhe), os outros candidatos numa
+   lista compacta por baixo, e os excluídos colapsados.
+3. **③ Validação visual** — o visualizador (agora o centro da app, não
+   uma secção qualquer) e o histórico de testes do PECTAB selecionado.
+4. **Administração** (colapsada por omissão) — base de PECTABs com
+   busca/filtro, adicionar PECTAB, importar JSON, e o histórico completo
+   (todos os PECTABs, com exportação CSV).
+
+A decisão operacional (`decisionFor()` em `app.js`) reduz as 4
+classificações técnicas (exact/safe/risky/recompile) a 3 níveis de
+resposta direta — 🟢 usar, 🟡 verificar antes de usar, 🔴 não usar — para
+a pergunta "posso usar isto ou não" nunca ficar ambígua. O botão "Gerar
+relatório de validação" exporta tudo isto (medidas, PECTAB, cálculo do
+score, decisão, avisos) num `.txt`, distinto do "pedido de compilação"
+(que é especificamente para pedir um PECTAB novo).
+
 ## Idioma
 
 Botões PT/EN no canto superior direito. A escolha fica em `localStorage`
