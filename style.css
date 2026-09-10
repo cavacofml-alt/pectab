@@ -52,6 +52,37 @@ header p {
   color: var(--muted);
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lang-switch {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.lang-btn {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-radius: 0;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lang-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 main {
   display: grid;
   grid-template-columns: minmax(280px, 380px) 1fr;

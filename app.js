@@ -59,14 +59,14 @@ function matchOne(physical, rec) {
   const reasons = [];
 
   if (physical.dir !== rec.dir) {
-    return { hardFail: true, reason: `orientação diferente: mediste ${physical.dir}, este PECTAB é ${rec.dir}` };
+    return { hardFail: true, reason: { key: "fail.dir", params: { measured: physical.dir, rec: rec.dir } } };
   }
   if (physical.st !== rec.st) {
-    return { hardFail: true, reason: `nº de talões diferente: mediste ${physical.st}, este PECTAB tem ${rec.st}` };
+    return { hardFail: true, reason: { key: "fail.st", params: { measured: physical.st, rec: rec.st } } };
   }
   const lenDelta = Math.abs(physical.len - rec.len);
   if (lenDelta > physical.lenTolerance) {
-    return { hardFail: true, reason: `comprimento total desvia ${lenDelta}mm (acima da tolerância de ${physical.lenTolerance}mm)` };
+    return { hardFail: true, reason: { key: "fail.len", params: { delta: lenDelta, tolerance: physical.lenTolerance } } };
   }
 
   const deltas = {
@@ -97,10 +97,10 @@ function matchOne(physical, rec) {
 
   const declaredSum = sectionSum(rec);
   if (declaredSum !== rec.len) {
-    reasons.push(`O len declarado deste PECTAB (${rec.len}mm) não bate com a soma das suas secções (${declaredSum}mm) — ${Math.abs(declaredSum - rec.len)}mm de inconsistência já no próprio registo, antes de comparar com a tua medida.`);
+    reasons.push({ key: "warn.lenSum", params: { len: rec.len, sum: declaredSum, diff: Math.abs(declaredSum - rec.len) } });
   }
   if (rec.eq === false) {
-    reasons.push("Este PECTAB tem talões de tamanhos diferentes (eq=N) — o valor \"add\" acima é só uma referência nominal, não representa cada talão.");
+    reasons.push({ key: "warn.eqN" });
   }
 
   return { hardFail: false, score, classification, deltas, reasons };
@@ -138,26 +138,23 @@ const TYPE_COLOR = { PAX: "#2f6feb", MAIN: "#8957e5", ADD: "#c9820b" };
 const el = (id) => document.getElementById(id);
 
 function classLabel(c) {
-  return { exact: "Match exato", safe: "Compromisso seguro", risky: "Compromisso arriscado", recompile: "Requer compilação nova" }[c] || c;
+  return t(`class.${c}`);
 }
 
 function classExplain(c) {
-  return {
-    exact: "Medidas iguais em tudo. Podes usar sem receio.",
-    safe: "Pequenas diferenças. Deve funcionar, mas confirma com um teste físico antes de imprimir em massa.",
-    risky: "Diferenças consideráveis. Testa fisicamente antes de usar — pode desalinhar código de barras ou perfuração.",
-    recompile: "Diferenças grandes demais para confiar. Provavelmente precisas de pedir uma compilação nova.",
-  }[c] || "";
+  return t(`classExplain.${c}`);
 }
 
-const FIELD_LABEL = { pax: "Passageiro (pax)", main: "Principal (main)", add: "Talão (add)", len: "Comprimento total (len)" };
+function fieldLabel(field) {
+  return t(`field.label.${field}`);
+}
 
 // frase legível para um desvio: delta = medido - PECTAB. positivo => PECTAB mais curto nesse campo.
 function deltaPhrase(field, delta) {
-  const label = FIELD_LABEL[field];
-  if (delta === 0) return `${label}: igual ao que mediste`;
-  const dir = delta > 0 ? "mais curto" : "mais comprido";
-  return `${label}: ${Math.abs(delta)}mm ${dir} no PECTAB do que mediste`;
+  const label = fieldLabel(field);
+  if (delta === 0) return t("delta.equal", { label });
+  if (delta > 0) return t("delta.shorter", { label, delta: Math.abs(delta) });
+  return t("delta.longer", { label, delta: Math.abs(delta) });
 }
 
 function renderDbList() {
@@ -171,7 +168,7 @@ function renderDbList() {
   for (const rec of state.db) {
     const tr = document.createElement("tr");
     tr.className = rec.id === state.selected ? "selected" : "";
-    const eqBadge = rec.eq === false ? '<span class="badge risky" title="talões não são todos iguais">eq=N</span>' : "";
+    const eqBadge = rec.eq === false ? `<span class="badge risky" title="${t("field.eqBadge.title")}">eq=N</span>` : "";
     tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td><td>${eqBadge}</td>`;
     tr.addEventListener("click", () => {
       state.selected = rec.id;
@@ -187,12 +184,12 @@ function renderResults() {
   wrap.innerHTML = "";
 
   if (!state.lastPhysical) {
-    wrap.innerHTML = '<p class="empty-state">Introduz as medidas físicas e clica em "Procurar match" para veres candidatos.</p>';
+    wrap.innerHTML = `<p class="empty-state">${t("results.empty.noSearch")}</p>`;
     return;
   }
 
   if (state.results.length === 0) {
-    wrap.innerHTML = '<p class="empty-state">Nenhum candidato passou os filtros de exclusão. Ver secção "Excluídos" abaixo, ou exporta um pedido de compilação nova.</p>';
+    wrap.innerHTML = `<p class="empty-state">${t("results.empty.noCandidates")}</p>`;
   }
 
   for (const r of state.results) {
@@ -208,7 +205,7 @@ function renderResults() {
       </div>
       <p class="result-explain">${classExplain(r.classification)}</p>
       <ul class="result-deltas">${deltaItems}</ul>
-      ${r.reasons.length ? `<ul class="result-warnings">${r.reasons.map((w) => `<li>${w}</li>`).join("")}</ul>` : ""}
+      ${r.reasons.length ? `<ul class="result-warnings">${r.reasons.map((w) => `<li>${t(w.key, w.params)}</li>`).join("")}</ul>` : ""}
     `;
     card.addEventListener("click", () => {
       state.selected = r.pectab.id;
@@ -222,13 +219,13 @@ function renderResults() {
   const exWrap = el("excluded-wrap");
   exWrap.innerHTML = "";
   if (state.excluded.length === 0) {
-    exWrap.innerHTML = '<p class="empty-state">Nenhum candidato excluído.</p>';
+    exWrap.innerHTML = `<p class="empty-state">${t("excluded.empty")}</p>`;
   } else {
     const ul = document.createElement("ul");
     ul.className = "excluded-list";
     for (const x of state.excluded) {
       const li = document.createElement("li");
-      li.textContent = `${x.pectab.id} — ${x.reason}`;
+      li.textContent = `${x.pectab.id} — ${t(x.reason.key, x.reason.params)}`;
       ul.appendChild(li);
     }
     exWrap.appendChild(ul);
@@ -244,7 +241,7 @@ function renderVisualizer() {
   const svgHost = el("viz-svg");
   const rec = state.db.find((r) => r.id === state.selected);
   if (!rec) {
-    svgHost.innerHTML = '<p class="empty-state">Seleciona um PECTAB na lista ou nos resultados para o visualizar.</p>';
+    svgHost.innerHTML = `<p class="empty-state">${t("viz.empty.noSelection")}</p>`;
     return;
   }
 
@@ -265,10 +262,10 @@ function renderVisualizer() {
   let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${BARCODE_DEFS}`;
 
   if (physical) {
-    svg += renderBar(physSections, 10, y, pxPerMm, barH, "Físico (medido)");
+    svg += renderBar(physSections, 10, y, pxPerMm, barH, t("viz.row.physical"));
     y += barH + gapY;
   }
-  svg += renderBar(recSections, 10, y, pxPerMm, barH, `${rec.id} (lógico)`);
+  svg += renderBar(recSections, 10, y, pxPerMm, barH, t("viz.row.logical", { id: rec.id }));
 
   // declared len line
   const lenX = 10 + rec.len * pxPerMm;
@@ -276,12 +273,14 @@ function renderVisualizer() {
 
   const sum = sectionSum(rec);
   const summaryLines = [];
-  summaryLines.push(`<span style="color:#cf222e">┃</span> len declarado (${rec.id}): ${rec.len}mm`);
+  summaryLines.push(`<span style="color:#cf222e">┃</span> ${t("viz.summary.declaredLen", { id: rec.id, len: rec.len })}`);
 
   if (sum !== rec.len) {
     const sumX = 10 + sum * pxPerMm;
     svg += `<line x1="${sumX}" y1="10" x2="${sumX}" y2="${height - 10}" stroke="#9a6700" stroke-dasharray="2,2" stroke-width="1.5"/>`;
-    summaryLines.push(`<span style="color:#9a6700">┊</span> soma das secções (${rec.id}): ${sum}mm — ${fmtDelta(sum - rec.len)} face ao len declarado`);
+    summaryLines.push(
+      `<span style="color:#9a6700">┊</span> ${t("viz.summary.sectionSum", { id: rec.id, sum, delta: fmtDelta(sum - rec.len) })}`
+    );
   }
 
   // boundary mismatch annotations vs physical
@@ -290,7 +289,7 @@ function renderVisualizer() {
     svg += markup;
     for (const d of deltas) {
       summaryLines.push(
-        `<span style="color:#cf222e">│</span> ${d.label}: ${rec.id} desvia ${fmtDelta(d.delta)} do físico medido a partir daqui`
+        `<span style="color:#cf222e">│</span> ${t("viz.summary.boundaryDelta", { label: d.label, id: rec.id, delta: fmtDelta(d.delta) })}`
       );
     }
   }
@@ -302,7 +301,7 @@ function renderVisualizer() {
   if (summaryHost) {
     summaryHost.innerHTML = summaryLines.length
       ? `<ul class="excluded-list">${summaryLines.map((l) => `<li>${l}</li>`).join("")}</ul>`
-      : '<p class="empty-state">Sem desvios a assinalar.</p>';
+      : `<p class="empty-state">${t("viz.summary.empty")}</p>`;
   }
 }
 
@@ -366,7 +365,7 @@ function boundaryDeltas(physSections, recSections, pxPerMm, height) {
     // da fronteira anterior, é a mesma causa a propagar-se, não um novo problema
     if (Math.abs(delta) >= VIZ_RISK_MM && delta !== prevDelta) {
       const x = 10 + physBoundaries[i] * pxPerMm;
-      const label = physSections[i - 1] ? `fim ${physSections[i - 1].label}` : `fronteira ${i}`;
+      const label = physSections[i - 1] ? t("viz.boundary.end", { section: physSections[i - 1].label }) : t("viz.boundary.generic", { n: i });
       markup += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
       markup += `<text x="${x + 2}" y="${20 + (height - 40) * (i / n)}" fill="#cf222e">${label} Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
       deltas.push({ label, delta });
@@ -392,22 +391,22 @@ function renderHistory() {
   wrap.innerHTML = "";
   const rec = state.db.find((r) => r.id === state.selected);
   if (!rec) {
-    wrap.innerHTML = '<p class="empty-state">Seleciona um PECTAB para ver ou registar histórico de testes.</p>';
+    wrap.innerHTML = `<p class="empty-state">${t("history.empty.noSelection")}</p>`;
     el("history-form").hidden = true;
     return;
   }
   el("history-form").hidden = false;
   const entries = state.history[rec.id] || [];
   if (entries.length === 0) {
-    wrap.innerHTML = '<p class="empty-state">Sem testes registados para este PECTAB.</p>';
+    wrap.innerHTML = `<p class="empty-state">${t("history.empty.noTests")}</p>`;
     return;
   }
   for (const e of [...entries].reverse()) {
     const div = document.createElement("div");
     div.className = "history-entry";
     div.innerHTML = `
-      <span class="badge ${e.result === "ok" ? "safe" : "recompile"}">${e.result === "ok" ? "OK" : "Falhou"}</span>
-      <strong>${e.airport || "(sem local)"}</strong>
+      <span class="badge ${e.result === "ok" ? "safe" : "recompile"}">${e.result === "ok" ? t("history.result.ok") : t("history.result.fail")}</span>
+      <strong>${e.airport || t("history.noLocation")}</strong>
       <div class="meta">${e.date}</div>
       ${e.note ? `<div>${escapeHtml(e.note)}</div>` : ""}
     `;
@@ -431,26 +430,28 @@ function addHistoryEntry(pectabId, entry) {
 function exportCompilationRequest() {
   const physical = state.lastPhysical;
   if (!physical) {
-    toast("Introduz e procura uma medida física primeiro.");
+    toast(t("toast.needPhysicalFirst"));
     return;
   }
   const best = state.results[0];
   const lines = [
-    "PEDIDO DE COMPILAÇÃO PECTAB",
-    `Gerado: ${new Date().toISOString()}`,
+    t("compile.title"),
+    t("compile.generated", { date: new Date().toISOString() }),
     "",
-    "Medidas físicas (rolo testado):",
+    t("compile.physicalHeading"),
     `  dir=${physical.dir} st=${physical.st} len=${physical.len} pax=${physical.pax} main=${physical.main} add=${physical.add}`,
     "",
   ];
   if (best) {
-    lines.push(`Melhor candidato existente encontrado: ${best.pectab.id} (${classLabel(best.classification)}, score ${best.score})`);
+    lines.push(t("compile.bestCandidate", { id: best.pectab.id, classification: classLabel(best.classification), score: best.score }));
     lines.push(`  Δpax=${best.deltas.pax} Δmain=${best.deltas.main} Δadd=${best.deltas.add} Δlen=${best.deltas.len}`);
-    if (best.reasons.length) lines.push(`  Notas: ${best.reasons.join("; ")}`);
+    if (best.reasons.length) {
+      lines.push(`  ${t("compile.notes", { notes: best.reasons.map((r) => t(r.key, r.params)).join("; ") })}`);
+    }
   } else {
-    lines.push("Nenhum candidato existente passou os filtros de exclusão.");
+    lines.push(t("compile.noneFound"));
   }
-  lines.push("", "Especificação pedida (a partir das medidas físicas acima):");
+  lines.push("", t("compile.requestedSpec"));
   lines.push(`  len=${physical.len} pax=${physical.pax} main=${physical.main} add=${physical.add} st=${physical.st} dir=${physical.dir}`);
 
   downloadText(`pedido-compilacao-${Date.now()}.txt`, lines.join("\n"));
@@ -502,14 +503,14 @@ async function readDocxDocumentXml(arrayBuffer) {
       break;
     }
   }
-  if (eocdOffset === -1) throw new Error("não parece um .docx válido (fim de arquivo ZIP não encontrado)");
+  if (eocdOffset === -1) throw new Error(t("docx.err.notValidZip"));
 
   const cdEntries = view.getUint16(eocdOffset + 10, true);
   const cdOffset = view.getUint32(eocdOffset + 16, true);
 
   let offset = cdOffset;
   for (let i = 0; i < cdEntries; i++) {
-    if (view.getUint32(offset, true) !== CD_SIG) throw new Error("índice do .docx corrompido");
+    if (view.getUint32(offset, true) !== CD_SIG) throw new Error(t("docx.err.corruptIndex"));
     const compMethod = view.getUint16(offset + 10, true);
     const compSize = view.getUint32(offset + 20, true);
     const nameLen = view.getUint16(offset + 28, true);
@@ -529,18 +530,18 @@ async function readDocxDocumentXml(arrayBuffer) {
         xmlBytes = compData;
       } else if (compMethod === 8) {
         if (typeof DecompressionStream === "undefined") {
-          throw new Error("este browser não suporta descompressão nativa (DecompressionStream) — atualiza o browser ou preenche o formulário à mão");
+          throw new Error(t("docx.err.noDecompression"));
         }
         const stream = new Blob([compData]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
         xmlBytes = new Uint8Array(await new Response(stream).arrayBuffer());
       } else {
-        throw new Error(`método de compressão do .docx não suportado (${compMethod})`);
+        throw new Error(t("docx.err.unsupportedCompression", { method: compMethod }));
       }
       return new TextDecoder("utf-8").decode(xmlBytes);
     }
     offset += 46 + nameLen + extraLen + commentLen;
   }
-  throw new Error("word/document.xml não encontrado dentro do .docx");
+  throw new Error(t("docx.err.documentXmlNotFound"));
 }
 
 function docxXmlToText(xml) {
@@ -569,7 +570,7 @@ function extractPhysicalFieldsFromText(text) {
   const roundMm = (value, label) => {
     if (value === null || isNaN(value)) return value;
     const rounded = Math.round(value);
-    if (rounded !== value) notes.push(`${label}: ${value}mm arredondado para ${rounded}mm (PECTABs usam mm inteiros)`);
+    if (rounded !== value) notes.push(t("docx.roundedNote", { label, original: value, rounded }));
     return rounded;
   };
 
@@ -590,7 +591,7 @@ function extractPhysicalFieldsFromText(text) {
       .filter((v) => !isNaN(v));
     found.add = vals.length ? vals[0] : null;
     if (vals.length > 1) {
-      notes.push(`add: o formulário lista ${vals.length} valores (${vals.join(", ")}mm) — os talões não são todos iguais. Usei ${vals[0]}mm; corre o match outra vez com os outros valores.`);
+      notes.push(t("docx.multiValueNote", { count: vals.length, values: vals.join(", "), first: vals[0] }));
     }
   }
 
@@ -616,10 +617,10 @@ async function importDocxIntoPhysicalForm(file) {
 
     const applied = [];
     const missing = [];
-    const setIfFound = (id, key, fmt) => {
+    const setIfFound = (id, key) => {
       if (found[key] !== null && found[key] !== undefined && !isNaN(found[key])) {
         el(id).value = found[key];
-        applied.push(`${key}=${fmt ? fmt(found[key]) : found[key]}`);
+        applied.push(`${key}=${found[key]}`);
       } else {
         missing.push(key);
       }
@@ -636,14 +637,14 @@ async function importDocxIntoPhysicalForm(file) {
       missing.push("dir");
     }
 
-    let msg = applied.length ? `Preenchido: ${applied.join(", ")}.` : "Não consegui detetar nenhum campo.";
-    if (missing.length) msg += ` Não detetado (confirma à mão): ${missing.join(", ")}.`;
+    let msg = applied.length ? t("docx.applied", { list: applied.join(", ") }) : t("docx.noneDetected");
+    if (missing.length) msg += t("docx.missing", { list: missing.join(", ") });
     statusHost.textContent = msg;
     if (notes.length) statusHost.textContent += " " + notes.join(" ");
-    toast(missing.length ? "Importado com lacunas — revê os campos assinalados." : "Formulário preenchido a partir do .docx.");
+    toast(missing.length ? t("docx.toast.withGaps") : t("docx.toast.success"));
   } catch (e) {
-    statusHost.textContent = `Falha a importar: ${e.message}`;
-    toast("Não consegui ler o .docx — preenche à mão.");
+    statusHost.textContent = t("docx.importError", { error: e.message });
+    toast(t("docx.toast.failure"));
   }
 }
 
@@ -677,41 +678,51 @@ function readPectabForm() {
   };
 }
 
-function init() {
+function renderAll() {
   renderDbList();
   renderResults();
   renderVisualizer();
   renderHistory();
+}
+
+function init() {
+  applyStaticI18n();
+  renderAll();
 
   el("phys-tolerance").value = LEN_TOLERANCE_DEFAULT;
+
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setLang(btn.getAttribute("data-lang"));
+      applyStaticI18n();
+      renderAll();
+    });
+  });
 
   el("match-form").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const physical = readPhysicalForm();
     runMatching(physical);
     if (state.results.length > 0) state.selected = state.results[0].pectab.id;
-    renderResults();
-    renderDbList();
-    renderVisualizer();
-    renderHistory();
+    renderAll();
   });
 
   el("add-pectab-form").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const rec = readPectabForm();
     if (!rec.id) {
-      toast("Falta o ID do PECTAB.");
+      toast(t("toast.missingId"));
       return;
     }
     if (state.db.some((r) => r.id === rec.id)) {
-      toast(`Já existe um PECTAB com id ${rec.id}.`);
+      toast(t("toast.duplicateId", { id: rec.id }));
       return;
     }
     state.db.push(rec);
     saveDb(state.db);
     renderDbList();
     ev.target.reset();
-    toast(`${rec.id} adicionado.`);
+    toast(t("toast.added", { id: rec.id }));
   });
 
   el("delete-selected").addEventListener("click", () => {
@@ -721,13 +732,10 @@ function init() {
     saveDb(state.db);
     saveHistory(state.history);
     state.selected = null;
-    renderDbList();
-    renderResults();
-    renderVisualizer();
-    renderHistory();
+    renderAll();
   });
 
-  function loadFromArray(recs, label) {
+  function loadFromArray(recs, labelKey) {
     let added = 0;
     for (const rec of recs) {
       if (!state.db.some((r) => r.id === rec.id)) {
@@ -737,18 +745,18 @@ function init() {
     }
     saveDb(state.db);
     renderDbList();
-    toast(`${label}: ${added} PECTAB(s) adicionados (${recs.length - added} já existiam).`);
+    toast(t("toast.loadResult", { label: t(labelKey), added, skipped: recs.length - added }));
   }
 
-  el("load-sample").addEventListener("click", () => loadFromArray(PECTAB_SAMPLE, "Exemplo fictício"));
-  el("load-catalog").addEventListener("click", () => loadFromArray(PECTAB_CATALOG, "Catálogo real"));
+  el("load-sample").addEventListener("click", () => loadFromArray(PECTAB_SAMPLE, "toast.label.sample"));
+  el("load-catalog").addEventListener("click", () => loadFromArray(PECTAB_CATALOG, "toast.label.catalog"));
 
   el("import-json-btn").addEventListener("click", () => {
     const text = el("import-json-text").value.trim();
     if (!text) return;
     try {
       const arr = JSON.parse(text);
-      if (!Array.isArray(arr)) throw new Error("esperado um array de PECTABs");
+      if (!Array.isArray(arr)) throw new Error(t("toast.invalidJsonArray"));
       let added = 0;
       for (const rec of arr) {
         if (!rec.id) continue;
@@ -760,9 +768,9 @@ function init() {
       saveDb(state.db);
       renderDbList();
       el("import-json-text").value = "";
-      toast(`${added} PECTAB(s) importados/atualizados.`);
+      toast(t("toast.importedUpdated", { count: added }));
     } catch (e) {
-      toast("JSON inválido: " + e.message);
+      toast(t("toast.invalidJson", { error: e.message }));
     }
   });
 
@@ -786,7 +794,7 @@ function init() {
   el("import-docx-btn").addEventListener("click", () => {
     const file = el("import-docx-file").files[0];
     if (!file) {
-      toast("Escolhe primeiro um ficheiro .docx.");
+      toast(t("toast.chooseDocxFirst"));
       return;
     }
     importDocxIntoPhysicalForm(file);

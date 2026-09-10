@@ -9,6 +9,18 @@ PECTAB existente no DCS às cegas, imprimir, e só descobrir em papel que o
 `len` declarado não bate com a soma das secções, ou que a fronteira
 stub/main não coincide com a perfuração física do rolo.
 
+## Idioma
+
+Botões PT/EN no canto superior direito. A escolha fica em `localStorage`
+(chave `pectab.lang`) e sobrevive a recarregar a página. As traduções
+estão em `i18n.js` — `I18N.pt` / `I18N.en`; texto estático usa atributos
+`data-i18n`/`data-i18n-html`/`data-i18n-title` no HTML, texto gerado em
+JS (resultados, avisos, exportações, toasts) passa por `t(key, vars)`.
+Nenhum texto traduzível fica guardado já traduzido em `state` — os
+avisos de match, por exemplo, guardam `{key, params}` e só são
+traduzidos no render, para que trocar de idioma sem repetir a busca
+atualize tudo (incluindo os avisos) de imediato.
+
 ## Porque não é uma app com backend
 
 A app não tem servidor, base de dados hospedada nem passo de build de
