@@ -39,10 +39,10 @@
           <div><label>ID</label><input id="new-id" required></div>
           <div><label title="Qual secção sai primeiro da impressora: Pax Stub → PAX, Additional Stubs → ADD">dir</label><select id="new-dir"><option>PAX</option><option>ADD</option></select></div>
           <div><label title="How many additional stubs — nº de talões adicionais">st (talões)</label><input id="new-st" type="number" min="0" value="0" required></div>
-          <div><label title="Bag tag length — comprimento total da etiqueta">len (mm)</label><input id="new-len" type="number" min="0" required></div>
-          <div><label title="Passenger Stub length — comprimento do talão do passageiro">pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
-          <div><label title="Main tag part length — comprimento da parte principal">main (mm)</label><input id="new-main" type="number" min="0" required></div>
-          <div><label title="Additional Stub(s) length — comprimento nominal de cada talão adicional">add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
+          <div><label title="Bag tag length — comprimento total da etiqueta">len (mm)</label><input id="new-len" type="number" min="0" step="any" required></div>
+          <div><label title="Passenger Stub length — comprimento do talão do passageiro">pax (mm)</label><input id="new-pax" type="number" min="0" step="any" required></div>
+          <div><label title="Main tag part length — comprimento da parte principal">main (mm)</label><input id="new-main" type="number" min="0" step="any" required></div>
+          <div><label title="Additional Stub(s) length — comprimento nominal de cada talão adicional">add (mm)</label><input id="new-add" type="number" min="0" step="any" value="0" required></div>
           <div><label title="Se todos os talões adicionais têm o mesmo tamanho (N = tamanhos diferentes, add é só um valor nominal)">eq (talões iguais)</label><select id="new-eq"><option value="Y">Y</option><option value="N">N</option></select></div>
           <div><label title="Nº de destinos que este PECTAB suporta (informativo)">dest</label><input id="new-dest" type="number" min="0"></div>
         </div>
@@ -112,11 +112,11 @@
         <div class="field-grid">
           <div><label title="Qual secção sai primeiro da impressora: Pax Stub → PAX, Additional Stubs → ADD">dir</label><select id="phys-dir"><option>PAX</option><option>ADD</option></select></div>
           <div><label title="How many additional stubs — nº de talões adicionais">st (talões)</label><input id="phys-st" type="number" min="0" value="0" required></div>
-          <div><label title="Bag tag length — comprimento total da etiqueta">len (mm)</label><input id="phys-len" type="number" min="0" required></div>
-          <div><label title="Passenger Stub length — comprimento do talão do passageiro">pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
-          <div><label title="Main tag part length — comprimento da parte principal">main (mm)</label><input id="phys-main" type="number" min="0" required></div>
-          <div><label title="Additional Stub(s) length — comprimento de cada talão adicional. Se houver mais de um valor no formulário, corre uma busca por valor.">add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
-          <div><label title="Não vem do teu formulário — é só desta ferramenta. Quantos mm de diferença no len ainda são aceites antes de excluir um candidato. 0 = exige igual.">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
+          <div><label title="Bag tag length — comprimento total da etiqueta">len (mm)</label><input id="phys-len" type="number" min="0" step="any" required></div>
+          <div><label title="Passenger Stub length — comprimento do talão do passageiro">pax (mm)</label><input id="phys-pax" type="number" min="0" step="any" required></div>
+          <div><label title="Main tag part length — comprimento da parte principal">main (mm)</label><input id="phys-main" type="number" min="0" step="any" required></div>
+          <div><label title="Additional Stub(s) length — comprimento de cada talão adicional. Se houver mais de um valor no formulário, corre uma busca por valor.">add (mm)</label><input id="phys-add" type="number" min="0" step="any" value="0" required></div>
+          <div><label title="Não vem do teu formulário — é só desta ferramenta. Quantos mm de diferença no len ainda são aceites antes de excluir um candidato. 0 = exige igual.">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" step="any" value="0"></div>
         </div>
         <div class="row mt">
           <button type="submit">Procurar match</button>
