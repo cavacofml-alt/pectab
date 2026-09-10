@@ -143,7 +143,8 @@ function sectionsFor(rec, orderMode) {
   return mode === "add-first" ? [...stubs, main, pax] : [pax, main, ...stubs];
 }
 
-const TYPE_COLOR = { PAX: "#2f6feb", MAIN: "#8957e5", ADD: "#c9820b" };
+const TYPE_COLOR = { MAIN: "#FFC000", PAX: "#00B050", ADD: "#00B0F0" };
+const TYPE_TEXT_COLOR = { MAIN: "#3a2e00", PAX: "#fff", ADD: "#00303f" };
 
 /* ---------- rendering ---------- */
 const el = (id) => document.getElementById(id);
@@ -288,7 +289,7 @@ function renderVisualizer() {
 
   // boundary mismatch annotations vs physical
   if (physical) {
-    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height, marginX);
+    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height, marginX, width);
     svg += markup;
     for (const d of deltas) {
       summaryLines.push(
@@ -318,7 +319,7 @@ function renderBar(sections, x0, y0, pxPerMm, h, label) {
     const w = Math.max(1, s.len * pxPerMm);
     out += `<rect x="${x}" y="${y0}" width="${w}" height="${h}" fill="${TYPE_COLOR[s.type]}"/>`;
     if (w >= s.label.length * 6 + 4) {
-      out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="#fff" font-size="9" text-anchor="middle">${s.label}</text>`;
+      out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${s.label}</text>`;
     }
     x += w;
   }
@@ -336,24 +337,34 @@ function renderBar(sections, x0, y0, pxPerMm, h, label) {
   return out;
 }
 
-function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX) {
+function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX, width) {
   const physBoundaries = cumulativeBoundaries(physSections);
   const recBoundaries = cumulativeBoundaries(recSections);
   const n = Math.min(physBoundaries.length, recBoundaries.length) - 1; // ignore final edge (=total len, already shown)
   let markup = "";
   const deltas = [];
   let prevDelta = 0;
+  let prevIncrement = null;
   for (let i = 1; i < n; i++) {
     const delta = recBoundaries[i] - physBoundaries[i];
-    // só assinala onde o desvio COMEÇA — se o desvio se mantiver igual ao
-    // da fronteira anterior, é a mesma causa a propagar-se, não um novo problema
-    if (Math.abs(delta) >= VIZ_RISK_MM && delta !== prevDelta) {
+    const increment = delta - prevDelta;
+    // um talão mais curto/comprido do que devia arrasta o mesmo desvio
+    // constante fronteira a fronteira (ex: -5mm, -10mm, -15mm em 3 talões
+    // iguais) — isso é UM problema a repetir-se, não três. Só assinala
+    // quando o ritmo do desvio muda, não sempre que o desvio acumulado
+    // cresce da mesma forma.
+    const isNewPattern = prevIncrement === null || Math.abs(increment - prevIncrement) >= 1;
+    if (Math.abs(delta) >= VIZ_RISK_MM && isNewPattern) {
       const x = marginX + physBoundaries[i] * pxPerMm;
       const label = physSections[i - 1] ? t("viz.boundary.end", { section: physSections[i - 1].label }) : t("viz.boundary.generic", { n: i });
+      const onRightHalf = x > width / 2;
+      const textX = onRightHalf ? x - 4 : x + 4;
+      const anchor = onRightHalf ? "end" : "start";
       markup += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
-      markup += `<text x="${x + 2}" y="${20 + (height - 40) * (i / n)}" fill="#cf222e">${label} Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
+      markup += `<text x="${textX}" y="${20 + (height - 40) * (i / n)}" text-anchor="${anchor}" fill="#cf222e">${label} Δ${delta > 0 ? "+" : ""}${delta}mm</text>`;
       deltas.push({ label, delta });
     }
+    prevIncrement = increment;
     prevDelta = delta;
   }
   return { markup, deltas };
