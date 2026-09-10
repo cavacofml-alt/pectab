@@ -72,14 +72,14 @@
       <table>
         <thead><tr><th>No teu formulário (inglês)</th><th>Campo aqui</th></tr></thead>
         <tbody>
-          <tr><td>"Pax Stub" marcado como saindo primeiro</td><td><code>dir = PAX</code></td></tr>
-          <tr><td>"Additional Stubs" marcado como saindo primeiro</td><td><code>dir = ADD</code></td></tr>
-          <tr><td>How many additional stubs / nº de talões</td><td><code>st</code></td></tr>
           <tr><td>Bag tag length / total tag length</td><td><code>len</code> (mm)</td></tr>
+          <tr><td>Bag tag width</td><td>não usado — a ferramenta só trabalha o eixo do comprimento</td></tr>
           <tr><td>Passenger Stub length</td><td><code>pax</code> (mm)</td></tr>
           <tr><td>Main tag part length / main tag length</td><td><code>main</code> (mm)</td></tr>
           <tr><td>Additional Stub(s) length</td><td><code>add</code> (mm)</td></tr>
-          <tr><td>Bag tag width</td><td>não usado — a ferramenta só trabalha o eixo do comprimento</td></tr>
+          <tr><td>How many additional stubs / nº de talões</td><td><code>st</code></td></tr>
+          <tr><td>"Pax Stub" marcado como saindo primeiro</td><td><code>dir = PAX</code></td></tr>
+          <tr><td>"Additional Stubs" marcado como saindo primeiro</td><td><code>dir = ADD</code></td></tr>
         </tbody>
       </table>
       <p class="empty-state">
@@ -88,6 +88,12 @@
         todos do mesmo tamanho — a ferramenta só aceita um valor de
         <code>add</code> por busca. Corre "Procurar match" uma vez por
         cada valor e compara os resultados.
+      </p>
+      <p class="empty-state">
+        O campo <code>tolerância len</code> não existe no teu formulário —
+        é só desta ferramenta: quantos mm de diferença entre o teu
+        <code>len</code> medido e o <code>len</code> de um PECTAB ainda são
+        aceites antes de o excluir da lista. <code>0</code> = exige igual.
       </p>
     </section>
 
@@ -101,7 +107,7 @@
           <div><label title="Passenger Stub length — comprimento do talão do passageiro">pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
           <div><label title="Main tag part length — comprimento da parte principal">main (mm)</label><input id="phys-main" type="number" min="0" required></div>
           <div><label title="Additional Stub(s) length — comprimento de cada talão adicional. Se houver mais de um valor no formulário, corre uma busca por valor.">add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
-          <div><label title="Margem de tolerância para o desvio do len declarado antes de excluir um candidato">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
+          <div><label title="Não vem do teu formulário — é só desta ferramenta. Quantos mm de diferença no len ainda são aceites antes de excluir um candidato. 0 = exige igual.">tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
         </div>
         <div class="row mt">
           <button type="submit">Procurar match</button>
