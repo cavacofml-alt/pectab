@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PECTAB Toolkit</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>PECTAB Toolkit</h1>
+  <p>Validação local de configurações PECTAB contra medidas físicas — sem servidor, dados no browser.</p>
+</header>
+
+<main>
+  <div>
+    <section class="panel">
+      <h2>Base de PECTABs (local)</h2>
+      <div class="pectab-list">
+        <table>
+          <thead><tr><th>ID</th><th>dir</th><th>len</th><th>st</th></tr></thead>
+          <tbody id="db-list-body"></tbody>
+        </table>
+        <p class="empty-state" id="db-empty">Base vazia. Carrega os dados de exemplo ou adiciona um PECTAB abaixo.</p>
+      </div>
+      <div class="row mt">
+        <button type="button" class="secondary" id="load-sample">Carregar exemplo</button>
+        <button type="button" class="ghost" id="export-db-btn">Exportar base (JSON)</button>
+        <button type="button" class="ghost" id="delete-selected">Apagar selecionado</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Adicionar PECTAB</h2>
+      <form id="add-pectab-form">
+        <div class="field-grid">
+          <div><label>ID</label><input id="new-id" required></div>
+          <div><label>dir</label><select id="new-dir"><option>PAX</option><option>ADD</option></select></div>
+          <div><label>st (talões)</label><input id="new-st" type="number" min="0" value="0" required></div>
+          <div><label>len (mm)</label><input id="new-len" type="number" min="0" required></div>
+          <div><label>pax (mm)</label><input id="new-pax" type="number" min="0" required></div>
+          <div><label>main (mm)</label><input id="new-main" type="number" min="0" required></div>
+          <div><label>add (mm)</label><input id="new-add" type="number" min="0" value="0" required></div>
+        </div>
+        <label class="mt">remarks</label>
+        <input id="new-remarks">
+        <div class="row mt"><button type="submit">Adicionar à base</button></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Importar</h2>
+      <label>Ficheiro JSON</label>
+      <input type="file" id="import-json-file" accept="application/json">
+      <label class="mt">ou cola JSON (array de PECTABs)</label>
+      <textarea id="import-json-text" rows="4"></textarea>
+      <div class="row mt"><button type="button" class="secondary" id="import-json-btn">Importar / atualizar</button></div>
+    </section>
+  </div>
+
+  <div>
+    <section class="panel">
+      <h2>Medida física (rolo testado)</h2>
+      <form id="match-form">
+        <div class="field-grid">
+          <div><label>dir</label><select id="phys-dir"><option>PAX</option><option>ADD</option></select></div>
+          <div><label>st (talões)</label><input id="phys-st" type="number" min="0" value="0" required></div>
+          <div><label>len (mm)</label><input id="phys-len" type="number" min="0" required></div>
+          <div><label>pax (mm)</label><input id="phys-pax" type="number" min="0" required></div>
+          <div><label>main (mm)</label><input id="phys-main" type="number" min="0" required></div>
+          <div><label>add (mm)</label><input id="phys-add" type="number" min="0" value="0" required></div>
+          <div><label>tolerância len (mm)</label><input id="phys-tolerance" type="number" min="0" value="0"></div>
+        </div>
+        <div class="row mt">
+          <button type="submit">Procurar match</button>
+          <button type="button" class="ghost" id="export-compile-btn">Exportar pedido de compilação</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Candidatos</h2>
+      <div id="results-wrap"></div>
+      <details class="mt">
+        <summary>Excluídos</summary>
+        <div id="excluded-wrap"></div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>Visualizador</h2>
+      <div class="row between">
+        <label style="margin:0">Ordem de impressão</label>
+        <select id="order-toggle" style="width:auto">
+          <option value="">automática (por dir)</option>
+          <option value="pax-first">forçar PAX primeiro</option>
+          <option value="add-first">forçar ADD primeiro</option>
+        </select>
+      </div>
+      <div class="viz-wrap mt" id="viz-svg"></div>
+      <div class="viz-legend">
+        <span><span class="swatch" style="background:#2f6feb"></span>PAX</span>
+        <span><span class="swatch" style="background:#8957e5"></span>MAIN</span>
+        <span><span class="swatch" style="background:#c9820b"></span>ADD (talão)</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Histórico de testes</h2>
+      <div id="history-wrap"></div>
+      <form id="history-form" class="mt" hidden>
+        <div class="field-grid">
+          <div><label>Data</label><input id="hist-date" type="date"></div>
+          <div><label>Aeroporto/handler</label><input id="hist-airport"></div>
+          <div><label>Resultado</label><select id="hist-result"><option value="ok">OK</option><option value="fail">Falhou</option></select></div>
+        </div>
+        <label class="mt">Nota</label>
+        <input id="hist-note">
+        <div class="row mt"><button type="submit">Registar teste</button></div>
+      </form>
+    </section>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

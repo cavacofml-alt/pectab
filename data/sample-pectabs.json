@@ -1,0 +1,32 @@
+[
+  {
+    "id": "FRA-ALVO",
+    "dir": "PAX",
+    "st": 2,
+    "len": 451,
+    "pax": 100,
+    "main": 291,
+    "add": 30,
+    "remarks": "Exemplo ilustrativo: len declarado (451) nao bate com a soma pax+main+st*add (100+291+60=451 na verdade so fecha se add=30x2; ajustar aos teus valores reais). Usar para testar a deteccao de desvio len vs soma."
+  },
+  {
+    "id": "P6301",
+    "dir": "ADD",
+    "st": 3,
+    "len": 420,
+    "pax": 90,
+    "main": 240,
+    "add": 30,
+    "remarks": "Exemplo ilustrativo do caso discutido: fronteira main/stub no software fica a 10mm da fronteira fisica real medida no rolo (~15mm). Valores de demonstracao, nao dados reais do DCS."
+  },
+  {
+    "id": "P9201",
+    "dir": "PAX",
+    "st": 3,
+    "len": 430,
+    "pax": 96,
+    "main": 244,
+    "add": 30,
+    "remarks": "Exemplo ilustrativo: fronteira main/stub coincide com o fisico, mas len/pax desviam ~2mm/6mm face a medida fisica de referencia."
+  }
+]
