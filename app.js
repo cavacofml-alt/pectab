@@ -955,6 +955,16 @@ function renderAll() {
 
 function init() {
   applyStaticI18n();
+
+  // primeira visita, sem nada guardado ainda: carrega o catálogo real
+  // logo de início. Sem isto, procurar um match dá silenciosamente
+  // "nenhum candidato" (base vazia) em vez de um erro óbvio — já
+  // confundiu utilizadores a pensar que o botão de busca "não funciona".
+  if (state.db.length === 0) {
+    state.db = PECTAB_CATALOG;
+    saveDb(state.db);
+  }
+
   renderAll();
 
   el("phys-tolerance").value = LEN_TOLERANCE_DEFAULT;
