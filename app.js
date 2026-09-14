@@ -23,7 +23,17 @@ function loadDb() {
 }
 
 function saveDb(db) {
-  localStorage.setItem(STORAGE_DB, JSON.stringify(db));
+  // sob file://, alguns browsers (Edge com certas políticas de segurança
+  // para ficheiros locais, entre outros) bloqueiam o localStorage e
+  // localStorage.setItem lança excepção. Se isto disparar sem apanhar
+  // dentro do init(), o resto do arranque (incluindo ligar o botão
+  // "Procurar match") nunca chega a correr — a app persistir os dados
+  // é sempre secundário a ela funcionar, mesmo que não persista nada.
+  try {
+    localStorage.setItem(STORAGE_DB, JSON.stringify(db));
+  } catch (e) {
+    console.error("Falha a guardar base local — a app continua a funcionar, só sem persistência.", e);
+  }
 }
 
 function loadHistory() {
@@ -37,7 +47,11 @@ function loadHistory() {
 }
 
 function saveHistory(hist) {
-  localStorage.setItem(STORAGE_HISTORY, JSON.stringify(hist));
+  try {
+    localStorage.setItem(STORAGE_HISTORY, JSON.stringify(hist));
+  } catch (e) {
+    console.error("Falha a guardar histórico local — a app continua a funcionar, só sem persistência.", e);
+  }
 }
 
 // encapsula guardar + voltar a desenhar, para nenhuma mutação de state.db
