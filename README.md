@@ -103,6 +103,36 @@ do DCS — verifica contra o que vês fisicamente e ajusta o interruptor
 - `dir = PAX` → assume-se `[PAX, MAIN, ADD×st]`
 - `dir = ADD` → assume-se `[ADD×st, MAIN, PAX]`
 
+### Desenhos técnicos de fornecedores não dizem qual a direção
+
+Um desenho técnico de um fornecedor de impressão (ex: um ficheiro de
+especificação com cotas em mm) mostra o comprimento de cada secção, mas
+não diz qual delas é `pax` e qual é `add` — isso infere-se por grandeza
+(no catálogo, `pax` costuma andar entre 38-70mm, `add` entre 11-24mm), e
+**não diz a direção de impressão** (`dir`), porque essa é uma convenção
+do DCS, não uma medida física do desenho.
+
+Caso concreto: um desenho com duas tiras finas (~20-23mm, magnitude de
+`add`) de um lado e uma secção maior (~63mm, magnitude de `pax`) do
+outro, com `len≈507-509mm` e `st=2`, dá **dois candidatos válidos e
+diferentes** dependendo da direção assumida:
+
+- `dir=ADD` (talões primeiro) → melhor candidato **P6901** (score 77,
+  arriscado)
+- `dir=PAX` (talão passageiro primeiro) → melhor candidato **P6603**
+  (score 81, arriscado — e a nota do registo, "20/23 — barcodes
+  outside", coincide exatamente com as duas medidas lidas no desenho)
+
+Nenhum dos dois é claramente superior só pelos números — a pontuação
+mais alta (P6603) não é prova de que a direção é essa, só de que essa
+hipótese explica melhor os dados *se for essa a direção real*. A lição:
+sempre que faltar a direção de impressão, corre a busca **nas duas
+direções** e compara os dois melhores candidatos, em vez de escolher
+uma direção por inferência e parar na primeira correspondência
+plausível — e procura nas notas (`remarks`) dos candidatos por detalhes
+que coincidam com o desenho (medidas específicas, "barcodes outside",
+etc.), que ajudam a desempatar entre hipóteses.
+
 ## Motor de matching
 
 Para cada PECTAB na base local, comparado contra a medida física:
