@@ -92,7 +92,10 @@ Um PECTAB é um registo com:
 
 A "medida física" introduzida no formulário de matching usa exatamente os
 mesmos campos — mede-se o rolo com uma régua e preenche-se da mesma forma
-que um PECTAB, para que a comparação seja direta.
+que um PECTAB, para que a comparação seja direta. Tem um campo extra,
+opcional, `width` (largura, mm) — não existe nos registos do catálogo e
+não entra no motor de matching; serve só para o confronto com stocks
+conhecidos da indústria (ver secção própria).
 
 ### Ordem de impressão das secções
 
@@ -132,6 +135,43 @@ uma direção por inferência e parar na primeira correspondência
 plausível — e procura nas notas (`remarks`) dos candidatos por detalhes
 que coincidam com o desenho (medidas específicas, "barcodes outside",
 etc.), que ajudam a desempatar entre hipóteses.
+
+## Confronto com stocks conhecidos da indústria
+
+Além de comparar contra o catálogo de PECTABs (a fonte autoritativa,
+específica desta operação), a app também confronta a medida física
+contra **tamanhos de stock genéricos, conhecidos na indústria** — um
+segundo sinal, independente, para quando se recebe uma medida de um
+cliente ou fornecedor de impressão e se quer confirmar se está dentro
+do que é fisicamente normal, mesmo antes de saber qual PECTAB usar.
+
+Isto nunca substitui o catálogo nem entra no motor de matching (o
+campo `largura` é só para este confronto — o motor continua a
+trabalhar só no eixo do comprimento). Aparece como um painel próprio
+("Confronto com stocks conhecidos da indústria") depois de procurar
+match.
+
+Referências usadas (`INDUSTRY_STOCK_STANDARDS` em `app.js`):
+
+- **Largura**: 50,80mm-54,00mm (IATA Resolution 740)
+- **Espaçamento entre etiquetas**: 3,175mm-6,00mm (recomendado 6,00mm; IATA Resolution 740)
+- **Tamanho comercial conhecido**: 2" × 21" (51mm × 533mm) — descrito por
+  vários fornecedores como "dimensão standard IATA", suporta até 3 talões
+- **Intervalo típico de comprimento**: 533mm-635mm (21"-25")
+
+**Importante sobre a fiabilidade destas fontes**: o acesso aos
+documentos primários (iata.org, scribd, wikipedia, sites de
+fabricantes como a Avery Dennison) está bloqueado pela rede deste
+ambiente — os números acima vêm de **resumos de motores de pesquisa**
+sobre esses documentos, não de leitura direta. São plausíveis e
+mutuamente consistentes (a largura da IATA e a largura comercial
+2"/2.1"/2.125" convergem, e vários PECTABs reais do catálogo têm
+`len=533` exatamente), mas devem ser tratados como referência
+secundária — confirma no documento primário se isto for decisivo numa
+decisão real. E mesmo que estivessem 100% confirmados, isto **não
+resolve a ambiguidade de direção de impressão** (ver secção anterior)
+— stocks de indústria descrevem o material em bruto, não a forma como
+cada companhia o divide em `pax`/`main`/`add` no DCS.
 
 ## Motor de matching
 

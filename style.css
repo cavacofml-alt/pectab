@@ -326,6 +326,21 @@ th { color: var(--muted); font-weight: 600; }
 .tolerance-compare-row .id { font-family: var(--mono); font-weight: 600; }
 .tolerance-compare button { margin-top: 6px; }
 
+/* ---------- confronto com stocks conhecidos da indústria ---------- */
+.stock-check {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+.stock-check-title { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.stock-check-list { list-style: none; margin: 0; padding: 0; font-size: 12.5px; }
+.stock-check-list li { padding: 3px 0; padding-left: 18px; position: relative; }
+.stock-check-list li .mark { position: absolute; left: 0; width: 14px; }
+.stock-check-list li.ok { color: var(--muted); }
+.stock-check-list li.warn { color: var(--warn); font-weight: 600; }
+.stock-check-source { margin: 8px 0 0; font-size: 11px; color: var(--muted); font-style: italic; }
+
 /* ---------- lista compacta de outros candidatos ---------- */
 .candidates-title {
   font-size: 11px;

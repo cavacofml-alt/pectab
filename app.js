@@ -11,6 +11,46 @@ const EXTENDED_TOLERANCE_MM = 6; // tolerância "alargada" usada para a compara�
 const STORAGE_DB = "pectab.db";
 const STORAGE_HISTORY = "pectab.history";
 
+/* ---------- stocks conhecidos da indústria (referência genérica, não específica de nenhum cliente) ----------
+   Isto NÃO é o catálogo de PECTABs (esse vem de quem gere e cria os
+   PECTABs, é a fonte autoritativa). Isto é um segundo sinal, genérico,
+   para quando se recebe uma medida de um cliente/fornecedor de
+   impressão e se quer confirmar se está dentro do que é fisicamente
+   normal na indústria — nunca substitui o catálogo, só ajuda a
+   perceber se uma medida "estranha" é mesmo estranha ou é só um
+   tamanho de stock comum que ainda não temos catalogado.
+
+   Fontes: resumos de pesquisa web (não foi possível aceder aos
+   documentos primários — iata.org, scribd, wikipedia e sites de
+   fabricantes estão bloqueados pela rede deste ambiente). Trata como
+   referência secundária, a confirmar se for crítico — nunca inventado. */
+const INDUSTRY_STOCK_STANDARDS = {
+  widthMm: { min: 50.8, max: 54.0, source: "IATA Resolution 740 (via resumo de pesquisa web, doc. primário não acedido)" },
+  tagGapMm: { min: 3.175, max: 6.0, recommended: 6.0, source: "IATA Resolution 740 (via resumo de pesquisa web)" },
+  knownLengths: [
+    { label: '2" × 21" (51mm × 533mm)', widthMm: 51, lengthMm: 533, note: "descrito por vários fornecedores como \"dimensão standard IATA\", suporta até 3 talões", source: "pandapaperroll.com, possupply.com (revendedores — via resumo de pesquisa web)" },
+  ],
+  typicalLengthRangeMm: { min: 533, max: 635, source: '"tipicamente 21\"-25\"" — pandapaperroll.com (via resumo de pesquisa web)' },
+};
+
+function checkIndustryStock(physical) {
+  const notes = [];
+  const w = INDUSTRY_STOCK_STANDARDS.widthMm;
+  if (physical.width) {
+    const inRange = physical.width >= w.min && physical.width <= w.max;
+    notes.push({ key: inRange ? "stock.width.ok" : "stock.width.out", params: { width: physical.width, min: w.min, max: w.max }, ok: inRange });
+  }
+  const known = INDUSTRY_STOCK_STANDARDS.knownLengths.find((k) => k.lengthMm === physical.len);
+  if (known) {
+    notes.push({ key: "stock.length.knownMatch", params: { label: known.label, note: known.note }, ok: true });
+  } else {
+    const range = INDUSTRY_STOCK_STANDARDS.typicalLengthRangeMm;
+    const inRange = physical.len >= range.min && physical.len <= range.max;
+    notes.push({ key: inRange ? "stock.length.inRange" : "stock.length.outRange", params: { len: physical.len, min: range.min, max: range.max }, ok: inRange });
+  }
+  return notes;
+}
+
 /* ---------- storage ---------- */
 function loadDb() {
   try {
@@ -385,6 +425,25 @@ function renderResults() {
   }
 
   renderToleranceCompare();
+  renderStockCheck();
+}
+
+function renderStockCheck() {
+  const host = el("stock-check-wrap");
+  if (!host) return;
+  if (!state.lastPhysical) {
+    host.innerHTML = "";
+    return;
+  }
+  const notes = checkIndustryStock(state.lastPhysical);
+  host.innerHTML = `
+    <div class="stock-check">
+      <div class="stock-check-title">${t("stock.title")}</div>
+      <ul class="stock-check-list">
+        ${notes.map((n) => `<li class="${n.ok ? "ok" : "warn"}"><span class="mark">${n.ok ? "✓" : "⚠"}</span> ${t(n.key, n.params)}</li>`).join("")}
+      </ul>
+      <p class="stock-check-source">${t("stock.sourceNote")}</p>
+    </div>`;
 }
 
 function renderToleranceCompare() {
@@ -940,6 +999,7 @@ function readPhysicalForm() {
     main: num("phys-main"),
     add: num("phys-add"),
     lenTolerance: num("phys-tolerance") || LEN_TOLERANCE_DEFAULT,
+    width: num("phys-width") || null, // opcional — só para o confronto com stocks da indústria, nunca entra no motor de matching
   };
 }
 
