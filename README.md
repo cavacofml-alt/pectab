@@ -153,22 +153,62 @@ match.
 
 Referências usadas (`INDUSTRY_STOCK_STANDARDS` em `app.js`):
 
-- **Largura**: 50,80mm-54,00mm (IATA Resolution 740)
-- **Espaçamento entre etiquetas**: 3,175mm-6,00mm (recomendado 6,00mm; IATA Resolution 740)
-- **Tamanho comercial conhecido**: 2" × 21" (51mm × 533mm) — descrito por
-  vários fornecedores como "dimensão standard IATA", suporta até 3 talões
-- **Intervalo típico de comprimento**: 533mm-635mm (21"-25")
+- **Largura**: 50,80mm-54,00mm (IATA Resolution 740, Attachments S1/T)
+  — a única verificação **ativa** (mostra aviso se a largura medida
+  ficar fora deste intervalo).
+- **Tamanhos comerciais conhecidos**: 2" × 21" (51mm × 533,4mm) e
+  2,125" × 21,25" (54mm × 540mm) — nota **só positiva** quando o
+  comprimento bate certo com um destes, nunca um aviso quando não bate
+  (não bater é o caso normal — a maioria dos PECTABs reais não é
+  nenhum destes dois tamanhos).
+- **Espaçamento entre etiquetas** (3,175mm-6,00mm, recomendado 6,00mm;
+  IATA Resolution 740): documentado aqui como facto, mas sem
+  verificação ativa na app — é uma medida do rolo/produção, não algo
+  que o agente de campo meça numa etiqueta individual.
 
-**Importante sobre a fiabilidade destas fontes**: o acesso aos
-documentos primários (iata.org, scribd, wikipedia, sites de
-fabricantes como a Avery Dennison) está bloqueado pela rede deste
-ambiente — os números acima vêm de **resumos de motores de pesquisa**
-sobre esses documentos, não de leitura direta. São plausíveis e
-mutuamente consistentes (a largura da IATA e a largura comercial
-2"/2.1"/2.125" convergem, e vários PECTABs reais do catálogo têm
-`len=533` exatamente), mas devem ser tratados como referência
-secundária — confirma no documento primário se isto for decisivo numa
-decisão real. E mesmo que estivessem 100% confirmados, isto **não
+**Deliberadamente sem intervalo de comprimento "típico"**: chegámos a
+ter um (400-600mm, de fichas técnicas de impressoras Epson/Urielsoft),
+mas foi removido depois de um debate cruzado revelar um problema real:
+esse intervalo teria dado um falso aviso no nosso próprio PECTAB
+`P5401` (350mm, talão único), que é um registo real e válido do
+catálogo. A Zebra documenta impressoras móveis vendidas explicitamente
+para "Airline Baggage Tags" com intervalo de 12,7mm-813mm — largo
+demais para servir de aviso útil, por isso preferimos não ter nenhum
+intervalo de comprimento genérico em vez de ter um errado.
+
+### Como estes números foram verificados
+
+O acesso aos documentos primários (iata.org, scribd, wikipedia, sites
+de fabricantes) está bloqueado pela rede deste ambiente — nunca foram
+lidos diretamente. Em vez disso, foram verificados por um **debate
+cruzado entre dois modelos de IA diferentes** (Gemini e ChatGPT), cada
+um a pesquisar de forma independente e depois a criticar/testar as
+afirmações do outro, com pedido explícito para admitirem incerteza em
+vez de manterem uma resposta só por consistência. O processo apanhou
+dois erros reais antes de entrarem no código:
+
+- Um dos modelos inventou um "limite mecânico de 635mm" ligado a
+  modelos de impressora específicos (Unimark BT700, Zebra TTP) — que
+  admitiu, quando confrontado, ser uma confusão com as dimensões
+  externas da caixa de uma impressora VidTroniX, sem relação com o
+  comprimento de etiquetas.
+- Um dos modelos afirmou que a IATA define duas "orientações
+  nomeadas" (claim-check-first vs. bingo-stub-first) que explicariam a
+  ordem de impressão — o outro modelo negou diretamente que isso
+  exista no documento. Sem forma de verificar o documento primário,
+  descartámos esta afirmação por completo, mesmo sendo a mais
+  interessante das duas — não entrou em lado nenhum do código nem
+  documentação.
+
+Os números que sobraram (largura IATA, os dois tamanhos comerciais, a
+inexistência de uma ordem de impressão universal) foram confirmados
+de forma consistente por ambos os modelos em rondas sucessivas,
+incluindo depois de serem desafiados diretamente a provar ou retratar
+cada afirmação — e a conclusão sobre a ordem de impressão bate
+certo com o que já sabíamos pelos nossos próprios dados (grupos de
+PECTABs com a mesma especificação física em `dir=PAX` e `dir=ADD`).
+Mesmo assim, tratam-se como referência secundária, não confirmada
+diretamente — e mesmo que estivessem 100% confirmados, isto **não
 resolve a ambiguidade de direção de impressão** (ver secção anterior)
 — stocks de indústria descrevem o material em bruto, não a forma como
 cada companhia o divide em `pax`/`main`/`add` no DCS.

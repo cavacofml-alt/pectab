@@ -16,21 +16,30 @@ const STORAGE_HISTORY = "pectab.history";
    PECTABs, é a fonte autoritativa). Isto é um segundo sinal, genérico,
    para quando se recebe uma medida de um cliente/fornecedor de
    impressão e se quer confirmar se está dentro do que é fisicamente
-   normal na indústria — nunca substitui o catálogo, só ajuda a
-   perceber se uma medida "estranha" é mesmo estranha ou é só um
-   tamanho de stock comum que ainda não temos catalogado.
+   normal na indústria — nunca substitui o catálogo.
 
-   Fontes: resumos de pesquisa web (não foi possível aceder aos
-   documentos primários — iata.org, scribd, wikipedia e sites de
-   fabricantes estão bloqueados pela rede deste ambiente). Trata como
-   referência secundária, a confirmar se for crítico — nunca inventado. */
+   Fontes verificadas em debate cruzado entre dois modelos de IA
+   (cada um a corrigir e a testar o outro, incluindo dois casos em que
+   um deles admitiu ter inventado um detalhe específico — o "635mm/
+   Unimark/Zebra" e o "Attachment G com duas orientações nomeadas" —
+   e foi corrigido). Documentos primários (iata.org, scribd, sites de
+   fabricantes) continuam bloqueados pela rede deste ambiente — nunca
+   verificados diretamente por nós, só por convergência entre fontes
+   independentes. Ver README para o histórico completo do debate.
+
+   Deliberadamente SEM intervalo de comprimento "típico": chegámos a
+   ter um (400-600mm, de fichas técnicas Epson/Urielsoft), mas
+   descartámo-lo — daria um falso aviso num PECTAB real e válido do
+   nosso próprio catálogo (P5401, 350mm, talão único), que está bem
+   dentro do intervalo de impressoras móveis de bag tag documentado
+   pela Zebra (12,7-813mm — intervalo demasiado largo para distinguir
+   "normal" de "estranho", por isso nem esse usamos como aviso). */
 const INDUSTRY_STOCK_STANDARDS = {
-  widthMm: { min: 50.8, max: 54.0, source: "IATA Resolution 740 (via resumo de pesquisa web, doc. primário não acedido)" },
-  tagGapMm: { min: 3.175, max: 6.0, recommended: 6.0, source: "IATA Resolution 740 (via resumo de pesquisa web)" },
+  widthMm: { min: 50.8, max: 54.0, source: "IATA Resolution 740, Attachments S1/T — convergência entre duas pesquisas de IA independentes, doc. primário não acedido diretamente" },
   knownLengths: [
-    { label: '2" × 21" (51mm × 533mm)', widthMm: 51, lengthMm: 533, note: "descrito por vários fornecedores como \"dimensão standard IATA\", suporta até 3 talões", source: "pandapaperroll.com, possupply.com (revendedores — via resumo de pesquisa web)" },
+    { label: '2" × 21" (51mm × 533,4mm)', lengthMm: 533, note: "tamanho comercial confirmado (página de produto real, Panda Paper Roll) — não é um comprimento definido pela IATA, é só um tamanho que se vende", source: "pandapaperroll.com" },
+    { label: '2,125" × 21,25" (54mm × 540mm)', lengthMm: 540, note: "pelo menos um fornecedor vende este tamanho — menos bem triangulado entre fontes do que o de 533,4mm, trata com um pouco mais de cautela", source: "pandapaperroll.com" },
   ],
-  typicalLengthRangeMm: { min: 533, max: 635, source: '"tipicamente 21\"-25\"" — pandapaperroll.com (via resumo de pesquisa web)' },
 };
 
 function checkIndustryStock(physical) {
@@ -40,13 +49,12 @@ function checkIndustryStock(physical) {
     const inRange = physical.width >= w.min && physical.width <= w.max;
     notes.push({ key: inRange ? "stock.width.ok" : "stock.width.out", params: { width: physical.width, min: w.min, max: w.max }, ok: inRange });
   }
+  // só nota positiva quando bate certo com um tamanho comercial conhecido — não bater
+  // é o caso normal (a maioria dos PECTABs reais não é nenhum destes dois tamanhos),
+  // nunca um aviso.
   const known = INDUSTRY_STOCK_STANDARDS.knownLengths.find((k) => k.lengthMm === physical.len);
   if (known) {
     notes.push({ key: "stock.length.knownMatch", params: { label: known.label, note: known.note }, ok: true });
-  } else {
-    const range = INDUSTRY_STOCK_STANDARDS.typicalLengthRangeMm;
-    const inRange = physical.len >= range.min && physical.len <= range.max;
-    notes.push({ key: inRange ? "stock.length.inRange" : "stock.length.outRange", params: { len: physical.len, min: range.min, max: range.max }, ok: inRange });
   }
   return notes;
 }
@@ -436,6 +444,14 @@ function renderStockCheck() {
     return;
   }
   const notes = checkIndustryStock(state.lastPhysical);
+  // sem largura preenchida e sem bater com nenhum tamanho comercial conhecido,
+  // não há nada para mostrar — isso é o caso normal (não bater com um dos dois
+  // tamanhos comerciais é a maioria dos PECTABs reais), não uma falha, por isso
+  // não mostra uma caixa vazia.
+  if (notes.length === 0) {
+    host.innerHTML = "";
+    return;
+  }
   host.innerHTML = `
     <div class="stock-check">
       <div class="stock-check-title">${t("stock.title")}</div>
