@@ -125,11 +125,24 @@ const state = {
   orderOverride: null, // null = usa dir do registo selecionado; "pax-first" | "add-first" força
   catalogFilter: { search: "", dir: "" },
   toleranceCompare: null, // { tolerance, top } quando alargar a tolerância muda o melhor candidato
+  dirUnknown: false, // true quando a última busca foi feita com "direção desconhecida" (compara as duas)
 };
 
 /* ---------- matching engine ---------- */
+// cópia superficial de um registo (incluindo o array stubLengths, que é
+// referência própria) — nunca guardar em state.db um objeto vindo direto de
+// PECTAB_CATALOG/PECTAB_SAMPLE, para uma edição futura em state.db nunca
+// corromper essas constantes globais (ver loadFromArray e init()).
+function clonePectab(rec) {
+  return { ...rec, stubLengths: rec.stubLengths ? [...rec.stubLengths] : undefined };
+}
+
 function sectionSum(rec) {
-  return rec.pax + rec.main + rec.st * rec.add;
+  // stubLengths[], quando existe, é a repartição real por talão (vem das
+  // próprias remarks do catálogo, ex: "second stub is 20mm") — mais exata
+  // do que assumir todos os talões iguais a "add" (só válido quando eq!=false).
+  const addTotal = rec.stubLengths ? rec.stubLengths.reduce((sum, v) => sum + v, 0) : rec.st * rec.add;
+  return rec.pax + rec.main + addTotal;
 }
 
 function matchOne(physical, rec) {
@@ -196,7 +209,7 @@ function matchOne(physical, rec) {
     reasons.push({ key: "warn.lenSum", params: { len: rec.len, sum: declaredSum, diff: Math.abs(declaredSum - rec.len) } });
   }
   if (rec.eq === false) {
-    reasons.push({ key: "warn.eqN" });
+    reasons.push(rec.stubLengths ? { key: "warn.eqNKnown", params: { values: rec.stubLengths.join("/") } } : { key: "warn.eqN" });
   }
   if (rec.inUse === false) {
     reasons.push({ key: "warn.notInUse" });
@@ -205,11 +218,17 @@ function matchOne(physical, rec) {
   return { hardFail: false, score, classification, deltas, breakdown, reasons };
 }
 
-function computeMatches(physical) {
+// dirUnknown=true: quando não se sabe qual secção sai primeiro da
+// impressora, compara cada candidato usando a SUA PRÓPRIA direção — o
+// "gate" de dir deixa de excluir seja quem for. Equivale a correr a busca
+// uma vez para dir=PAX e outra para dir=ADD e juntar os resultados, mas
+// sem duplicar código e sem mostrar exclusões por direção que não fazem
+// sentido quando a direção é justamente o que não se sabe.
+function computeMatches(physical, dirUnknown) {
   const results = [];
   const excluded = [];
   for (const rec of state.db) {
-    const m = matchOne(physical, rec);
+    const m = matchOne(dirUnknown ? { ...physical, dir: rec.dir } : physical, rec);
     if (m.hardFail) {
       excluded.push({ pectab: rec, reason: m.reason });
     } else {
@@ -229,10 +248,12 @@ function computeMatches(physical) {
 }
 
 function runMatching(physical) {
-  const { results, excluded } = computeMatches(physical);
+  const dirUnknown = physical.dir === "UNKNOWN";
+  const { results, excluded } = computeMatches(physical, dirUnknown);
   state.results = results;
   state.excluded = excluded;
   state.lastPhysical = physical;
+  state.dirUnknown = dirUnknown;
 
   // corre uma segunda busca com tolerância alargada (mesma lógica da nota
   // de campo: liner vs. etiqueta pode dar até 6mm) só para comparação —
@@ -240,7 +261,7 @@ function runMatching(physical) {
   // alargar (candidato diferente no topo).
   const looseTolerance = Math.max(physical.lenTolerance, EXTENDED_TOLERANCE_MM);
   if (looseTolerance > physical.lenTolerance) {
-    const loose = computeMatches({ ...physical, lenTolerance: looseTolerance });
+    const loose = computeMatches({ ...physical, lenTolerance: looseTolerance }, dirUnknown);
     const strictTopId = results[0] ? results[0].pectab.id : null;
     const looseTopId = loose.results[0] ? loose.results[0].pectab.id : null;
     state.toleranceCompare = looseTopId && looseTopId !== strictTopId ? { tolerance: looseTolerance, top: loose.results[0] } : null;
@@ -265,7 +286,9 @@ function decisionFor(classification, rec) {
 /* ---------- layout order for visualizer ---------- */
 function sectionsFor(rec, orderMode) {
   const mode = orderMode || (rec.dir === "ADD" ? "add-first" : "pax-first");
-  const stubs = Array.from({ length: rec.st }, (_, i) => ({ type: "ADD", label: `ADD${i + 1}`, len: rec.add }));
+  // com stubLengths[] desenha cada talão com o seu comprimento real, em vez
+  // de repetir "add" (só uma média/nominal quando eq=false) para todos.
+  const stubs = Array.from({ length: rec.st }, (_, i) => ({ type: "ADD", label: `ADD${i + 1}`, len: rec.stubLengths ? rec.stubLengths[i] : rec.add }));
   const pax = { type: "PAX", label: "PAX", len: rec.pax };
   const main = { type: "MAIN", label: "MAIN", len: rec.main };
   return mode === "add-first" ? [...stubs, main, pax] : [pax, main, ...stubs];
@@ -327,9 +350,14 @@ function renderDbList() {
     const tr = document.createElement("tr");
     tr.className = rec.id === state.selected ? "selected" : "";
     tr.dataset.id = rec.id;
-    const eqBadge = rec.eq === false ? `<span class="badge risky" title="${t("field.eqBadge.title")}">eq=N</span>` : "";
+    const eqTitle = rec.stubLengths ? t("field.eqBadge.titleKnown", { values: rec.stubLengths.join("/") }) : t("field.eqBadge.title");
+    const eqBadge = rec.eq === false ? `<span class="badge risky" title="${escapeHtml(eqTitle)}">eq=N</span>` : "";
     const inUseBadge = rec.inUse === false ? `<span class="badge recompile" title="${t("field.notInUseBadge.title")}">${t("badge.notInUse")}</span>` : "";
-    tr.innerHTML = `<td>${rec.id}</td><td>${rec.dir}</td><td>${rec.len}</td><td>${rec.st}</td><td>${eqBadge} ${inUseBadge}</td>`;
+    // escapa campos do registo antes de os pôr em innerHTML — um PECTAB pode
+    // vir de um JSON importado (colado ou de ficheiro), nunca validado quanto
+    // ao conteúdo, e não queremos que texto malicioso em "id"/"dir" execute
+    // como HTML.
+    tr.innerHTML = `<td>${escapeHtml(rec.id)}</td><td>${escapeHtml(rec.dir)}</td><td>${escapeHtml(rec.len)}</td><td>${escapeHtml(rec.st)}</td><td>${eqBadge} ${inUseBadge}</td>`;
     tbody.appendChild(tr);
   }
 }
@@ -356,11 +384,28 @@ function scoreBreakdownTable(r) {
     </details>`;
 }
 
+// PECTABs com dir/st/len/pax/main/add idênticos são fisicamente
+// indistinguíveis — a medida física nunca consegue desempatar entre eles.
+// Escolher "o melhor" arbitrariamente (por ordem no catálogo) escondia essa
+// ambiguidade; isto encontra todos os outros candidatos nos resultados atuais
+// com a mesma especificação física exata do candidato dado.
+function specKey(rec) {
+  return [rec.dir, rec.st, rec.len, rec.pax, rec.main, rec.add].join("|");
+}
+
+function findEquivalentGroup(r) {
+  const key = specKey(r.pectab);
+  return state.results.filter((other) => specKey(other.pectab) === key);
+}
+
 function renderBestMatchHtml(r) {
   const level = decisionFor(r.classification, r.pectab);
   const isTopResult = state.results[0] && state.results[0].pectab.id === r.pectab.id;
   const checklist = [
-    checklistItem("checklist.dir", true),
+    // direção desconhecida: o gate de dir foi ignorado de propósito (ver
+    // computeMatches), por isso o "✓" sozinho seria enganador — mostra qual
+    // hipótese este candidato assume em concreto.
+    checklistItem("checklist.dir", true, state.dirUnknown ? t("checklist.dir.hypothesis", { dir: r.pectab.dir }) : ""),
     checklistItem("checklist.st", true),
     checklistItem("checklist.len", r.deltas.len === 0, r.deltas.len !== 0 ? fmtDelta(r.deltas.len) : ""),
     checklistItem("checklist.pax", r.deltas.pax === 0, r.deltas.pax !== 0 ? fmtDelta(r.deltas.pax) : ""),
@@ -368,18 +413,35 @@ function renderBestMatchHtml(r) {
     checklistItem("checklist.add", r.deltas.add === 0, r.deltas.add !== 0 ? fmtDelta(r.deltas.add) : ""),
   ].join("");
 
+  const group = findEquivalentGroup(r);
+  const groupHtml =
+    group.length > 1
+      ? `<div class="equiv-group">
+          <div class="equiv-group-title">${t("equiv.title", { count: group.length })}</div>
+          <div class="equiv-group-list">
+            ${group
+              .map(
+                (g) =>
+                  `<span class="equiv-group-id${g.pectab.id === r.pectab.id ? " current" : ""}">${escapeHtml(g.pectab.id)}${g.pectab.inUse === false ? ` <span class="badge recompile">${t("badge.notInUse")}</span>` : ""}</span>`
+              )
+              .join("")}
+          </div>
+        </div>`
+      : "";
+
   return `
-    <div class="hero-card" data-id="${r.pectab.id}">
+    <div class="hero-card" data-id="${escapeHtml(r.pectab.id)}">
       <div class="hero-kicker">${t(isTopResult ? "hero.title.best" : "hero.title.selected")}</div>
       <div class="decision-banner decision-${level}">${DECISION_ICON[level]} ${t(`decision.${level}`, { id: r.pectab.id })}</div>
       <div class="hero-top">
-        <span class="hero-id">${r.pectab.id}</span>
+        <span class="hero-id">${escapeHtml(r.pectab.id)}</span>
         <span>
           ${r.pectab.inUse === false ? `<span class="badge recompile">${t("badge.notInUse")}</span>` : ""}
           <span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>
         </span>
       </div>
       <div class="hero-subtitle">${t("hero.subtitle", { dir: r.pectab.dir, st: r.pectab.st, len: r.pectab.len })}</div>
+      ${groupHtml}
       <p class="result-explain">${classExplain(r.classification)}</p>
       <div class="checklist-title">${t("checklist.title")}</div>
       <div class="checklist-grid">${checklist}</div>
@@ -390,8 +452,8 @@ function renderBestMatchHtml(r) {
 
 function renderCandidateRowHtml(r) {
   return `
-    <div class="candidate-row${r.pectab.id === state.selected ? " active" : ""}" data-id="${r.pectab.id}">
-      <span class="id">${r.pectab.id}</span>
+    <div class="candidate-row${r.pectab.id === state.selected ? " active" : ""}" data-id="${escapeHtml(r.pectab.id)}">
+      <span class="id">${escapeHtml(r.pectab.id)}</span>
       ${r.pectab.inUse === false ? `<span class="badge recompile">${t("badge.notInUse")}</span>` : ""}
       <span class="badge ${r.classification}">${classLabel(r.classification)}</span>
       <span class="score">${r.score}%</span>
@@ -402,15 +464,17 @@ function renderResults() {
   const bestWrap = el("best-match-wrap");
   const listWrap = el("candidates-list");
 
+  const dirNote = state.lastPhysical && state.dirUnknown ? `<p class="dir-unknown-note">${t("results.dirUnknown.note")}</p>` : "";
+
   if (!state.lastPhysical) {
     bestWrap.innerHTML = `<p class="empty-state">${t("results.empty.noSearch")}</p>`;
     listWrap.innerHTML = "";
   } else if (state.results.length === 0) {
-    bestWrap.innerHTML = `<p class="empty-state">${t("results.empty.noCandidates")}</p>`;
+    bestWrap.innerHTML = dirNote + `<p class="empty-state">${t("results.empty.noCandidates")}</p>`;
     listWrap.innerHTML = "";
   } else {
     const heroResult = state.results.find((r) => r.pectab.id === state.selected) || state.results[0];
-    bestWrap.innerHTML = renderBestMatchHtml(heroResult);
+    bestWrap.innerHTML = dirNote + renderBestMatchHtml(heroResult);
     const others = state.results.filter((r) => r.pectab.id !== heroResult.pectab.id);
     listWrap.innerHTML = others.length
       ? `<div class="candidates-title">${t("candidates.title")}</div>${others.map(renderCandidateRowHtml).join("")}`
@@ -1050,8 +1114,13 @@ function init() {
   // logo de início. Sem isto, procurar um match dá silenciosamente
   // "nenhum candidato" (base vazia) em vez de um erro óbvio — já
   // confundiu utilizadores a pensar que o botão de busca "não funciona".
+  // clona os registos (não usa PECTAB_CATALOG por referência direta) —
+  // sem isto, qualquer edição futura em state.db corrompia a própria
+  // constante PECTAB_CATALOG, e "Carregar catálogo" deixava de detetar
+  // diferenças (estaria a comparar o catálogo corrompido contra ele
+  // próprio).
   if (state.db.length === 0) {
-    state.db = PECTAB_CATALOG;
+    state.db = PECTAB_CATALOG.map(clonePectab);
     saveDb(state.db);
   }
 
@@ -1145,16 +1214,24 @@ function init() {
     renderAll();
   });
 
+  // atualiza registos existentes (não só adiciona novos) — antes, carregar um
+  // catálogo mais recente nunca substituía um ID já guardado localmente, por
+  // isso uma correção nos dados nunca chegava a quem já tinha usado a app.
   function loadFromArray(recs, labelKey) {
     let added = 0;
+    let updated = 0;
     for (const rec of recs) {
-      if (!state.db.some((r) => r.id === rec.id)) {
-        state.db.push(rec);
+      const idx = state.db.findIndex((r) => r.id === rec.id);
+      if (idx === -1) {
+        state.db.push(clonePectab(rec));
         added++;
+      } else if (JSON.stringify(state.db[idx]) !== JSON.stringify(rec)) {
+        state.db[idx] = clonePectab(rec);
+        updated++;
       }
     }
     commitDb();
-    toast(t("toast.loadResult", { label: t(labelKey), added, skipped: recs.length - added }));
+    toast(t("toast.loadResultUpdated", { label: t(labelKey), added, updated }));
   }
 
   el("load-sample").addEventListener("click", () => loadFromArray(PECTAB_SAMPLE, "toast.label.sample"));

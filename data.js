@@ -761,7 +761,12 @@ const PECTAB_CATALOG = [
     "eq": false,
     "inUse": true,
     "dest": 3,
-    "remarks": "10/10/15"
+    "remarks": "10/10/15",
+    "stubLengths": [
+      10,
+      10,
+      15
+    ]
   },
   {
     "id": "P3102",
@@ -774,7 +779,12 @@ const PECTAB_CATALOG = [
     "eq": false,
     "inUse": true,
     "dest": 3,
-    "remarks": "like 3101 but with pnr — 10/10/15"
+    "remarks": "like 3101 but with pnr — 10/10/15",
+    "stubLengths": [
+      10,
+      10,
+      15
+    ]
   },
   {
     "id": "P3201",
@@ -1177,7 +1187,11 @@ const PECTAB_CATALOG = [
     "add": 16,
     "eq": false,
     "inUse": true,
-    "remarks": "second stub is 20mm — BAGS (thailand)"
+    "remarks": "second stub is 20mm — BAGS (thailand)",
+    "stubLengths": [
+      16,
+      20
+    ]
   },
   {
     "id": "P5002",
@@ -1189,7 +1203,11 @@ const PECTAB_CATALOG = [
     "add": 16,
     "eq": false,
     "inUse": true,
-    "remarks": "second stub is 20mm — speciaal voor GRQ"
+    "remarks": "second stub is 20mm — speciaal voor GRQ",
+    "stubLengths": [
+      16,
+      20
+    ]
   },
   {
     "id": "P5003",
@@ -1715,7 +1733,12 @@ const PECTAB_CATALOG = [
     "add": 16,
     "eq": false,
     "dest": 3,
-    "remarks": "16/16/16 (barcodes outside) — (voormalig mst)"
+    "remarks": "16/16/16 (barcodes outside) — (voormalig mst)",
+    "stubLengths": [
+      16,
+      16,
+      16
+    ]
   },
   {
     "id": "P7601",
@@ -1741,7 +1764,12 @@ const PECTAB_CATALOG = [
     "eq": false,
     "inUse": true,
     "dest": 3,
-    "remarks": "20/20/29  / logos — Peach"
+    "remarks": "20/20/29  / logos — Peach",
+    "stubLengths": [
+      20,
+      20,
+      29
+    ]
   },
   {
     "id": "P7702",
@@ -1780,7 +1808,12 @@ const PECTAB_CATALOG = [
     "eq": false,
     "inUse": true,
     "dest": 3,
-    "remarks": "20/20/29  / logos — Nesma LXR"
+    "remarks": "20/20/29  / logos — Nesma LXR",
+    "stubLengths": [
+      20,
+      20,
+      29
+    ]
   },
   {
     "id": "P7801",
@@ -1792,7 +1825,12 @@ const PECTAB_CATALOG = [
     "add": 15,
     "eq": false,
     "dest": 3,
-    "remarks": "15/15/18 (barcodes outside) — MST"
+    "remarks": "15/15/18 (barcodes outside) — MST",
+    "stubLengths": [
+      15,
+      15,
+      18
+    ]
   },
   {
     "id": "P7802",
@@ -1994,7 +2032,11 @@ const PECTAB_CATALOG = [
     "add": 11,
     "eq": false,
     "inUse": true,
-    "remarks": "max 1 onward on stub — 11/13"
+    "remarks": "max 1 onward on stub — 11/13",
+    "stubLengths": [
+      11,
+      13
+    ]
   },
   {
     "id": "P8901",
@@ -2110,7 +2152,11 @@ const PECTAB_CATALOG = [
     "eq": false,
     "inUse": true,
     "remarks": "copy from 9301 with normal barcodes — 16/20",
-    "mirrorPoint": 213
+    "mirrorPoint": 213,
+    "stubLengths": [
+      16,
+      20
+    ]
   },
   {
     "id": "P9303",
@@ -2123,7 +2169,11 @@ const PECTAB_CATALOG = [
     "eq": false,
     "inUse": true,
     "remarks": "NUE - non AEA standard barcodes, do not change !!! — 16/20",
-    "mirrorPoint": 213
+    "mirrorPoint": 213,
+    "stubLengths": [
+      16,
+      20
+    ]
   },
   {
     "id": "P9401",

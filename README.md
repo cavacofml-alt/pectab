@@ -77,9 +77,20 @@ Um PECTAB é um registo com:
 - `main` — comprimento da secção principal/código de barras (mm)
 - `add` — comprimento de cada talão adicional (mm)
 - `eq` — booleano, se todos os talões adicionais têm o mesmo tamanho
-  (quando `false`, o campo `add` é só um valor nominal — o export não dá
-  o tamanho individual de cada talão, por isso o visualizador não
-  consegue desenhar isso com exatidão; a app mostra um aviso nesse caso)
+  (quando `false`, o campo `add` é só um valor nominal — a app mostra
+  sempre um aviso nesse caso)
+- `stubLengths` — opcional, array com o comprimento real de cada talão
+  por ordem (ex: `[16, 20]`), só usado quando `eq=false` **e** as
+  `remarks` do próprio catálogo já davam essa repartição de forma
+  inequívoca (ex: "second stub is 20mm", ou um padrão `"10/10/15"` com
+  tantos números quanto `st`). Quando existe, o visualizador desenha
+  cada talão com o seu comprimento real (em vez de repetir `add` para
+  todos) e a soma das secções (`sectionSum`) usa os valores reais em
+  vez de `st × add` — isto já corrigiu falsos avisos de "len não bate
+  com a soma" em registos como o `P5001` (que na realidade bate certo
+  exatamente, 16+20≠2×16). **Não foi inventado nem estimado** — só
+  existe nos ~11 registos onde a fonte já continha os números; o resto
+  dos `eq=false` continua só com o valor nominal em `add`.
 - `dest` — nº de destinos que o PECTAB suporta (informativo)
 - `inUse` — booleano opcional, se o PECTAB está atualmente em uso segundo
   quem gere os PECTABs. Quando `false`, nunca aparece à frente de um
@@ -135,6 +146,25 @@ uma direção por inferência e parar na primeira correspondência
 plausível — e procura nas notas (`remarks`) dos candidatos por detalhes
 que coincidam com o desenho (medidas específicas, "barcodes outside",
 etc.), que ajudam a desempatar entre hipóteses.
+
+**Direção "Desconhecida — testar as duas"**: em vez de correr a busca
+manualmente duas vezes, o formulário de medida física tem uma terceira
+opção em "Direção de impressão". Com ela, o motor compara cada
+candidato do catálogo usando a *sua própria* direção declarada (o
+"gate" de `dir` deixa de excluir seja quem for) — os resultados juntam
+candidatos PAX-primeiro e ADD-primeiro na mesma lista, ordenados só
+pelo score, e cada candidato mostra qual hipótese assume. É exatamente
+o caso P6901/P6603 acima, automatizado.
+
+### PECTABs fisicamente indistinguíveis
+
+Quando o candidato recomendado tem outros registos no catálogo com a
+mesma especificação física exata (`dir`/`st`/`len`/`pax`/`main`/`add`
+todos iguais — ver a lista completa na secção "Dados"), a app já não
+escolhe um arbitrariamente sem avisar: mostra um aviso no próprio
+cartão do resultado a listar todos os IDs do grupo, porque a medida
+física, por definição, não consegue desempatar entre eles — só
+`remarks`, destino ou quem os pediu é que distingue.
 
 ## Confronto com stocks conhecidos da indústria
 
@@ -322,9 +352,26 @@ não está incluído — a folha confirma que é mesmo um slot vazio
 ("temp dnata", sem configuração), não uma etiqueta real.
 
 Botões na app: "Carregar catálogo (ADD+PAX)" carrega `data/pectabs.json`;
-"Carregar exemplo fictício" carrega `data/sample-pectabs.json`. O botão
-"Importar JSON" aceita qualquer array de registos no formato acima,
-colado ou por ficheiro.
+"Carregar exemplo fictício" carrega `data/sample-pectabs.json`. Ambos
+fazem **upsert** — não só adicionam IDs novos, também atualizam
+registos já existentes localmente cujos valores tenham mudado na fonte
+(antes só adicionavam, e uma correção nos dados nunca chegava a quem
+já tinha usado a app antes — carregar de novo dizia sempre "0
+adicionados" mesmo com o catálogo desatualizado). O botão "Importar
+JSON" aceita qualquer array de registos no formato acima, colado ou por
+ficheiro, e já fazia upsert desde sempre.
+
+Todos os registos entram em `state.db` como cópias (nunca a referência
+direta a `PECTAB_CATALOG`/`PECTAB_SAMPLE`) — sem isto, editar ou
+apagar um PECTAB na app corrompia silenciosamente essas constantes
+globais, e "Carregar catálogo" deixava de conseguir detetar diferenças
+(estaria a comparar o catálogo corrompido contra ele próprio).
+
+Como "Importar JSON" aceita **qualquer** conteúdo sem validar o schema,
+todos os campos de um registo (`id`, `dir`, etc.) passam por
+`escapeHtml()` antes de irem para o ecrã — um ficheiro JSON recebido
+de outra pessoa (colega, fornecedor) não consegue injetar HTML/script
+na página só por ser importado.
 
 ### Verificação sobre o catálogo todo
 
