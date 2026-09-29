@@ -353,6 +353,7 @@ th { color: var(--muted); font-weight: 600; }
 .tolerance-compare-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12.5px; }
 .tolerance-compare-label { color: var(--muted); min-width: 190px; }
 .tolerance-compare-row .id { font-family: var(--mono); font-weight: 600; }
+.tolerance-compare-row .delta-note { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
 .tolerance-compare button { margin-top: 6px; }
 
 /* ---------- confronto com stocks conhecidos da indústria ---------- */

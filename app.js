@@ -535,12 +535,17 @@ function renderToleranceCompare() {
   }
   const strictTop = state.results[0];
   const { tolerance, top } = state.toleranceCompare;
+  // "tolerância alargada a Xmm" é só o valor testado (fixo, EXTENDED_TOLERANCE_MM) —
+  // não diz quanto o candidato realmente precisava. Mostra o desvio de len real de
+  // cada candidato, para não parecer que ele "precisa" do valor todo testado quando
+  // pode precisar de muito menos (ex: testar a 6mm pode encontrar algo que só
+  // precisava de 1mm).
   const rowHtml = (labelKey, labelParams, r) => `
     <div class="tolerance-compare-row">
       <span class="tolerance-compare-label">${t(labelKey, labelParams)}</span>
       ${
         r
-          ? `<span class="id">${r.pectab.id}</span><span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>`
+          ? `<span class="id">${escapeHtml(r.pectab.id)}</span><span class="delta-note">Δlen ${fmtDelta(r.deltas.len)}</span><span class="badge ${r.classification}">${classLabel(r.classification)} · ${r.score}</span>`
           : `<span class="empty-state" style="padding:0">${t("results.empty.noCandidates")}</span>`
       }
     </div>`;
