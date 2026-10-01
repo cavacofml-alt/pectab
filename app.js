@@ -596,13 +596,18 @@ function renderVisualizer() {
 
   svg += renderBar(recSections, marginX, y0, pxPerMm, barH, physical ? t("viz.row.overlay", { id: rec.id }) : t("viz.row.logical", { id: rec.id }));
 
-  // declared len line
-  const lenX = marginX + rec.len * pxPerMm;
-  svg += `<line x1="${lenX}" y1="10" x2="${lenX}" y2="${height - 10}" stroke="#cf222e" stroke-dasharray="4,3" stroke-width="1.5"/>`;
-
+  // linha do len declarado: vermelho é "chama a atenção, há um problema" —
+  // só faz sentido aqui quando o len realmente não bate com a soma das
+  // secções (a mesma condição que já desenha a linha âmbar abaixo). Quando
+  // bate certo, esta linha coincide com a própria borda da barra — fica
+  // discreta, não compete visualmente com um desvio real.
   const sum = sectionSum(rec);
+  const lenX = marginX + rec.len * pxPerMm;
+  const lenLineColor = sum !== rec.len ? "#cf222e" : "#999";
+  svg += `<line x1="${lenX}" y1="10" x2="${lenX}" y2="${height - 10}" stroke="${lenLineColor}" stroke-dasharray="4,3" stroke-width="1.5" opacity="${sum !== rec.len ? 1 : 0.4}"/>`;
+
   const summaryLines = [];
-  summaryLines.push(`<span style="color:#cf222e">┃</span> ${t("viz.summary.declaredLen", { id: rec.id, len: rec.len })}`);
+  summaryLines.push(`<span style="color:${lenLineColor}">┃</span> ${t("viz.summary.declaredLen", { id: rec.id, len: rec.len })}`);
 
   if (sum !== rec.len) {
     const sumX = marginX + sum * pxPerMm;
