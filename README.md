@@ -166,6 +166,34 @@ cartão do resultado a listar todos os IDs do grupo, porque a medida
 física, por definição, não consegue desempatar entre eles — só
 `remarks`, destino ou quem os pediu é que distingue.
 
+Isto só apanha gémeos **dentro da mesma `dir`** — dois registos com a
+mesma especificação mas direções opostas (um `PAX`, outro `ADD`) não
+aparecem juntos aqui, porque normalmente procura-se já sabendo a
+direção. Usando "Desconhecida — testar as duas" (ver secção seguinte),
+encontrámos **7 registos com um gémeo físico exato do lado oposto**
+— mesmo que soubesses ao certo qual secção sai primeiro da impressora,
+isso não ajudaria a escolher entre eles, porque as medidas são
+idênticas em qualquer das duas hipóteses:
+
+```
+P2101 (ADD) ≡ P2102, P2104 (PAX)
+P3602 (ADD) ≡ P7501 (PAX)
+P5601 (ADD) ≡ P6101 (PAX)
+```
+
+### Direção "Desconhecida — testar as duas", verificada no catálogo todo
+
+Corremos a mesma verificação de self-match já feita para o motor
+principal (ver "Verificação sobre o catálogo todo" na secção Dados),
+mas desta vez com "Desconhecida" — cada um dos 173 registos comparado
+contra si próprio sem assumir a direção. Zero crashes, zero anomalias
+de pontuação. Os únicos casos em que o candidato recomendado muda
+(10 no total) explicam-se por duas coisas já documentadas: o leque
+maior de candidatos (sem o filtro de direção) faz a regra `inUse`
+disparar com mais frequência (6 casos), e os 7 gémeos cruzados acima
+(4 casos, com desempate pela ordem no catálogo). Nenhum caso novo ou
+inesperado.
+
 ## Confronto com stocks conhecidos da indústria
 
 Além de comparar contra o catálogo de PECTABs (a fonte autoritativa,
