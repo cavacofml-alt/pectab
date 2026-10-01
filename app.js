@@ -580,12 +580,12 @@ function renderVisualizer() {
   const pxPerMm = Math.min(6, 900 / totalMm);
   const barH = 46;
   const gapY = 16;
-  const marginX = 22;
+  const marginX = 30; // dá espaço aos furos + letras A/B fora da barra
   const width = Math.ceil(totalMm * pxPerMm) + marginX * 2;
   const rows = physical ? 2 : 1;
-  const height = rows * (barH + gapY) + 40;
+  const height = rows * (barH + gapY) + 54; // +14 face ao topo, para a chaveta de talões agrupados não ficar cortada
 
-  let y = 20;
+  let y = 34;
   // width="100%" sem height fixo: o SVG encolhe sempre para caber na
   // largura do painel (nunca pede scroll horizontal) e a altura
   // acompanha proporcionalmente — sem distorcer texto, ao contrário de
@@ -642,28 +642,63 @@ function renderBar(sections, x0, y0, pxPerMm, h, label) {
   let x = x0;
   let out = `<text x="${x0}" y="${y0 - 4}">${label}</text>`;
 
-  for (const s of sections) {
+  const positioned = sections.map((s) => {
     const w = Math.max(1, s.len * pxPerMm);
-    out += `<rect x="${x}" y="${y0}" width="${w}" height="${h}" fill="${TYPE_COLOR[s.type]}"/>`;
-    const dims = `${s.label} ${s.len}mm`;
-    if (w >= dims.length * 5.5 + 4) {
-      out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${dims}</text>`;
-    } else if (w >= s.label.length * 6 + 4) {
-      out += `<text x="${x + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${s.label}</text>`;
-    }
+    const sx = x;
     x += w;
+    return { s, x: sx, w };
+  });
+
+  for (const { s, x: sx, w } of positioned) {
+    out += `<rect x="${sx}" y="${y0}" width="${w}" height="${h}" fill="${TYPE_COLOR[s.type]}"/>`;
+  }
+
+  // legendas: por secção quando há espaço; secções seguidas do mesmo tipo e
+  // comprimento (ex: 3 talões ADD todos a 11mm) que não têm espaço nenhum
+  // para texto individual ganham uma chaveta só por cima do grupo, em vez
+  // de ficarem todas sem legenda nenhuma.
+  let i = 0;
+  while (i < positioned.length) {
+    let j = i;
+    while (j + 1 < positioned.length && positioned[j + 1].s.type === positioned[i].s.type && positioned[j + 1].s.len === positioned[i].s.len) j++;
+    const run = positioned.slice(i, j + 1);
+    const anyFits = run.some(({ s, w }) => w >= s.label.length * 6 + 4);
+    if (anyFits || run.length === 1) {
+      for (const { s, x: sx, w } of run) {
+        const dims = `${s.label} ${s.len}mm`;
+        if (w >= dims.length * 5.5 + 4) {
+          out += `<text x="${sx + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${dims}</text>`;
+        } else if (w >= s.label.length * 6 + 4) {
+          out += `<text x="${sx + w / 2}" y="${y0 + h / 2 + 3}" fill="${TYPE_TEXT_COLOR[s.type]}" font-size="9" text-anchor="middle">${s.label}</text>`;
+        }
+      }
+    } else {
+      const groupX0 = run[0].x;
+      const groupX1 = run[run.length - 1].x + run[run.length - 1].w;
+      const bracketY = y0 - 14;
+      out += `<line x1="${groupX0}" y1="${bracketY}" x2="${groupX0}" y2="${y0}" stroke="#666" stroke-width="1"/>`;
+      out += `<line x1="${groupX1}" y1="${bracketY}" x2="${groupX1}" y2="${y0}" stroke="#666" stroke-width="1"/>`;
+      out += `<line x1="${groupX0}" y1="${bracketY}" x2="${groupX1}" y2="${bracketY}" stroke="#666" stroke-width="1"/>`;
+      out += `<text x="${(groupX0 + groupX1) / 2}" y="${bracketY - 4}" font-size="9" text-anchor="middle">${run.length} × ${run[0].s.type} ${run[0].s.len}mm</text>`;
+    }
+    i = j + 1;
   }
 
   // linhas de corte entre secções (não são desvios, são cortes reais da etiqueta)
   let cutX = x0;
-  for (let i = 0; i < sections.length - 1; i++) {
-    cutX += sections[i].len * pxPerMm;
+  for (let k = 0; k < sections.length - 1; k++) {
+    cutX += sections[k].len * pxPerMm;
     out += `<line x1="${cutX}" y1="${y0}" x2="${cutX}" y2="${y0 + h}" stroke="#000" stroke-width="1"/>`;
   }
 
   out += `<rect x="${x0}" y="${y0}" width="${x - x0}" height="${h}" fill="none" stroke="#333" stroke-width="1"/>`;
-  out += `<text x="${x0 - 8}" y="${y0 + h / 2 + 4}" text-anchor="end" font-weight="bold">A</text>`;
-  out += `<text x="${x + 8}" y="${y0 + h / 2 + 4}" text-anchor="start" font-weight="bold">B</text>`;
+
+  // furos junto às pontas, como numa etiqueta física real
+  out += `<ellipse cx="${x0 - 14}" cy="${y0 + h / 2}" rx="4" ry="7" fill="none" stroke="#999" stroke-width="1.2"/>`;
+  out += `<ellipse cx="${x + 14}" cy="${y0 + h / 2}" rx="4" ry="7" fill="none" stroke="#999" stroke-width="1.2"/>`;
+
+  out += `<text x="${x0 - 22}" y="${y0 + h / 2 + 4}" text-anchor="end" font-weight="bold">A</text>`;
+  out += `<text x="${x + 22}" y="${y0 + h / 2 + 4}" text-anchor="start" font-weight="bold">B</text>`;
   return out;
 }
 
