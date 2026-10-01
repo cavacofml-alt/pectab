@@ -579,24 +579,22 @@ function renderVisualizer() {
   const totalMm = Math.max(rec.len, physical ? physical.len : 0, sectionSum(rec));
   const pxPerMm = Math.min(6, 900 / totalMm);
   const barH = 46;
-  const gapY = 16;
   const marginX = 30; // dá espaço aos furos + letras A/B fora da barra
   const width = Math.ceil(totalMm * pxPerMm) + marginX * 2;
-  const rows = physical ? 2 : 1;
-  const height = rows * (barH + gapY) + 54; // +14 face ao topo, para a chaveta de talões agrupados não ficar cortada
+  // só UMA barra agora (a do PECTAB, é a referência) — a medida física
+  // sobrepõe-se a ela em vez de ocupar uma segunda linha separada. Reserva
+  // espaço por cima (chavetas de talões agrupados + bandeiras dos limites
+  // físicos) e por baixo (rótulos "Δ Xmm" dos desvios).
+  const y0 = 60;
+  const height = y0 + barH + 56;
 
-  let y = 34;
   // width="100%" sem height fixo: o SVG encolhe sempre para caber na
   // largura do painel (nunca pede scroll horizontal) e a altura
   // acompanha proporcionalmente — sem distorcer texto, ao contrário de
   // esticar só o eixo x.
   let svg = `<svg width="100%" viewBox="0 0 ${width} ${height}" style="display:block">`;
 
-  if (physical) {
-    svg += renderBar(physSections, marginX, y, pxPerMm, barH, t("viz.row.physical"));
-    y += barH + gapY;
-  }
-  svg += renderBar(recSections, marginX, y, pxPerMm, barH, t("viz.row.logical", { id: rec.id }));
+  svg += renderBar(recSections, marginX, y0, pxPerMm, barH, physical ? t("viz.row.overlay", { id: rec.id }) : t("viz.row.logical", { id: rec.id }));
 
   // declared len line
   const lenX = marginX + rec.len * pxPerMm;
@@ -614,9 +612,10 @@ function renderVisualizer() {
     );
   }
 
-  // boundary mismatch annotations vs physical
+  // sobrepõe os limites da medida física em cima da MESMA barra do PECTAB —
+  // alinhados, quase não se notam; desviados, saltam à vista a vermelho.
   if (physical) {
-    const { markup, deltas } = boundaryDeltas(physSections, recSections, pxPerMm, height, marginX);
+    const { markup, deltas } = renderBoundaryOverlay(physSections, recSections, pxPerMm, y0, barH, marginX);
     svg += markup;
     for (const d of deltas) {
       summaryLines.push(
@@ -702,14 +701,22 @@ function renderBar(sections, x0, y0, pxPerMm, h, label) {
   return out;
 }
 
-function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX) {
+// desenha os limites da medida física sobrepostos à barra do PECTAB (a
+// referência): alinhados, uma linha cinzenta quase invisível por cima do
+// corte que já lá está; desviados, uma linha vermelha mais grossa + uma
+// faixa sombreada a preencher o espaço entre o corte esperado e o medido
+// + o desvio em mm por baixo da barra. O olho só é puxado para onde há
+// mesmo um problema — um limite certo não compete visualmente com um errado.
+function renderBoundaryOverlay(physSections, recSections, pxPerMm, y0, barH, marginX) {
   const physBoundaries = cumulativeBoundaries(physSections);
   const recBoundaries = cumulativeBoundaries(recSections);
-  const n = Math.min(physBoundaries.length, recBoundaries.length) - 1; // ignore final edge (=total len, already shown)
+  const n = Math.min(physBoundaries.length, recBoundaries.length) - 1; // ignora a fronteira final (=len total, já tem a sua própria linha)
   let markup = "";
   const deltas = [];
   let prevDelta = 0;
   let prevIncrement = null;
+  const flagTop = y0 - 8;
+  const labelY = y0 + barH + 16;
   for (let i = 1; i < n; i++) {
     const delta = recBoundaries[i] - physBoundaries[i];
     const increment = delta - prevDelta;
@@ -719,15 +726,23 @@ function boundaryDeltas(physSections, recSections, pxPerMm, height, marginX) {
     // quando o ritmo do desvio muda, não sempre que o desvio acumulado
     // cresce da mesma forma.
     const isNewPattern = prevIncrement === null || Math.abs(increment - prevIncrement) >= 1;
-    if (Math.abs(delta) >= VIZ_RISK_MM && isNewPattern) {
-      const x = marginX + physBoundaries[i] * pxPerMm;
+    const recX = marginX + recBoundaries[i] * pxPerMm;
+    const physX = marginX + physBoundaries[i] * pxPerMm;
+    const isOff = Math.abs(delta) >= VIZ_RISK_MM && isNewPattern;
+
+    if (isOff) {
+      const lo = Math.min(recX, physX);
+      const hi = Math.max(recX, physX);
+      markup += `<rect x="${lo}" y="${y0}" width="${Math.max(1, hi - lo)}" height="${barH}" fill="#cf222e" opacity="0.18"/>`;
+      markup += `<line x1="${physX}" y1="${flagTop}" x2="${physX}" y2="${y0 + barH + 6}" stroke="#cf222e" stroke-width="2" stroke-dasharray="4,2"/>`;
+      markup += `<text x="${physX}" y="${labelY}" font-size="10" font-weight="700" fill="#cf222e" text-anchor="middle">Δ${fmtDelta(delta)}</text>`;
       const label = physSections[i - 1] ? t("viz.boundary.end", { section: physSections[i - 1].label }) : t("viz.boundary.generic", { n: i });
-      // só a linha no desenho — o texto ("fim X Δ-15mm") vive na lista
-      // de resumo por baixo, nunca dentro do SVG: a meio de duas barras
-      // empilhadas não há altura livre que não colida com o rótulo de
-      // uma secção ou da linha de baixo, seja qual for a fronteira.
-      markup += `<line x1="${x}" y1="10" x2="${x}" y2="${height - 10}" stroke="#cf222e" stroke-width="1"/>`;
       deltas.push({ label, delta });
+    } else {
+      // coincidente (ou desvio pequeno demais para interessar): traço
+      // discreto, semi-transparente, mesmo em cima do corte do PECTAB —
+      // confirma que ali está tudo bem sem chamar a atenção para isso.
+      markup += `<line x1="${physX}" y1="${y0 - 2}" x2="${physX}" y2="${y0 + barH + 2}" stroke="#666" stroke-width="1" stroke-dasharray="3,2" opacity="0.35"/>`;
     }
     prevIncrement = increment;
     prevDelta = delta;
