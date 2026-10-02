@@ -5,11 +5,11 @@
  *
  *   node scripts/test-matching.js
  *
- * Carrega data.js + app.js tal como estão (sem alterações) dentro de um
- * contexto Node isolado (stub de document/localStorage), a mesma técnica já
- * usada manualmente várias vezes ao longo deste projeto para verificar o
- * catálogo todo — isto só formaliza esse processo num ficheiro do repositório
- * em vez de um script descartável em /tmp.
+ * Carrega data.js + js/*.js (pela MESMA ordem que index.html usa) tal como
+ * estão, sem alterações, dentro de um contexto Node isolado (stub de
+ * document/localStorage) — a mesma técnica já usada manualmente várias
+ * vezes ao longo deste projeto para verificar o catálogo todo, agora
+ * também a cobrir a ordem de carregamento real dos ficheiros divididos.
  *
  * Sai com código 0 se tudo passar, 1 se alguma asserção falhar.
  */
@@ -21,9 +21,23 @@ const assert = require("assert");
 
 const ROOT = path.join(__dirname, "..");
 const dataJs = fs.readFileSync(path.join(ROOT, "data.js"), "utf8");
-const appJs = fs
-  .readFileSync(path.join(ROOT, "app.js"), "utf8")
-  .replace('document.addEventListener("DOMContentLoaded", init);', "");
+
+// mesma ordem de <script src> que index.html usa para js/*.js — tem de ser
+// esta ordem porque state.js chama loadDb()/loadHistory() (de storage.js)
+// já no seu topo, e main.js usa praticamente tudo o resto.
+const APP_FILES = [
+  "js/config.js",
+  "js/storage.js",
+  "js/state.js",
+  "js/dom-utils.js",
+  "js/matching.js",
+  "js/visualizer.js",
+  "js/render.js",
+  "js/export.js",
+  "js/docx-import.js",
+  "js/main.js",
+];
+const appJs = APP_FILES.map((f) => fs.readFileSync(path.join(ROOT, f), "utf8")).join("\n");
 
 const sandbox = {
   console,
@@ -32,7 +46,9 @@ const sandbox = {
 };
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
-vm.runInContext(`${dataJs}\n${appJs}`, sandbox, { filename: "app-under-test.js" });
+vm.runInContext(`${dataJs}\n${appJs.replace('document.addEventListener("DOMContentLoaded", init);', "")}`, sandbox, {
+  filename: "app-under-test.js",
+});
 
 // PECTAB_CATALOG e state são `const` de topo-de-ficheiro: vivem no ambiente
 // léxico do contexto vm, não como propriedades do objeto global, por isso não

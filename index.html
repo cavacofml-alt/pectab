@@ -234,6 +234,20 @@
 
 <script src="i18n.js"></script>
 <script src="data.js"></script>
-<script src="app.js"></script>
+<!-- não são módulos ES de propósito: módulos são bloqueados por CORS mesmo
+     em same-origin file:// (confirmado e testado neste projeto), e esta app
+     tem de continuar a abrir por duplo-clique sem servidor nenhum. A ordem
+     importa — js/state.js já chama funções de js/storage.js no seu topo, e
+     js/main.js usa praticamente tudo o resto. -->
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/state.js"></script>
+<script src="js/dom-utils.js"></script>
+<script src="js/matching.js"></script>
+<script src="js/visualizer.js"></script>
+<script src="js/render.js"></script>
+<script src="js/export.js"></script>
+<script src="js/docx-import.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

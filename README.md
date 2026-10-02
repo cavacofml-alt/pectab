@@ -26,7 +26,7 @@ lista de painéis administrativos:
    busca/filtro, adicionar PECTAB, importar JSON, e o histórico completo
    (todos os PECTABs, com exportação CSV).
 
-A decisão operacional (`decisionFor()` em `app.js`) reduz as 4
+A decisão operacional (`decisionFor()` em `js/matching.js`) reduz as 4
 classificações técnicas (exact/safe/risky/recompile) a 3 níveis de
 resposta direta — 🟢 usar, 🟡 verificar antes de usar, 🔴 não usar — para
 a pergunta "posso usar isto ou não" nunca ficar ambígua. O botão "Gerar
@@ -61,9 +61,37 @@ Não há passo de instalação nem servidor necessário. Abre `index.html`
 diretamente no browser — duplo clique funciona, incluindo os botões de
 carregar catálogo. Os dados (`data/pectabs.json` e
 `data/sample-pectabs.json`) vêm embutidos em `data.js`, carregado antes
-de `app.js`, exatamente para evitar o bloqueio de CORS que o Chrome/Edge
-aplica a `fetch()` de ficheiros locais quando a página é aberta como
-`file://`.
+do resto da lógica (`js/*.js`), exatamente para evitar o bloqueio de CORS
+que o Chrome/Edge aplica a `fetch()` de ficheiros locais quando a página
+é aberta como `file://`.
+
+### Estrutura dos ficheiros
+
+A lógica está dividida em `js/`, cada ficheiro com uma responsabilidade,
+mas **nenhum é um módulo ES** — são `<script src="...">` normais,
+carregados pela ordem certa em `index.html` e a partilhar um único
+espaço global, tal como `i18n.js`/`data.js` já faziam. Módulos ES
+(`<script type="module">`) foram testados e rejeitados: o browser
+bloqueia-os por CORS mesmo em same-origin `file://`, o que partia
+exatamente o "abre com duplo clique" que é o requisito central desta app.
+
+| Ficheiro | Responsabilidade |
+|---|---|
+| `js/config.js` | Afinações do motor, chaves de armazenamento, stocks genéricos da indústria, mapas de cor/decisão. Só valores. |
+| `js/storage.js` | Ler/guardar `state.db`/`state.history` em `localStorage`, tolerante a falhas. |
+| `js/state.js` | O objeto `state` e os dois helpers (`clonePectab`, `commitDb`/`commitHistory`) que o protegem. |
+| `js/dom-utils.js` | `el()`, formatação de texto/números, `escapeHtml()`, download de ficheiros, toasts. |
+| `js/matching.js` | O motor: `matchOne`/`computeMatches`/`runMatching`/`decisionFor`/`checkIndustryStock`. Nenhuma função aqui toca no DOM. |
+| `js/visualizer.js` | O SVG de comparação física (`sectionsFor`, `renderBar`, `renderBoundaryOverlay`, `renderVisualizer`). |
+| `js/render.js` | Tudo o resto que desenha HTML a partir de `state` (lista do catálogo, resultados, histórico) e `renderAll()`. |
+| `js/export.js` | Exportações em texto/CSV (pedido de compilação, relatório de validação, histórico). |
+| `js/docx-import.js` | Preencher o formulário de medida física a partir de um `.docx`. |
+| `js/main.js` | Leitura dos formulários e `init()` — liga todos os event listeners. Carregado por último. |
+
+`scripts/test-matching.js` carrega estes ficheiros pela mesma ordem que
+`index.html` usa, por isso qualquer erro de ordenação introduzido numa
+futura edição é apanhado por `node scripts/test-matching.js` antes de
+chegar ao browser.
 
 ## Modelo de dados
 
@@ -209,7 +237,7 @@ trabalhar só no eixo do comprimento). Aparece como um painel próprio
 ("Confronto com stocks conhecidos da indústria") depois de procurar
 match.
 
-Referências usadas (`INDUSTRY_STOCK_STANDARDS` em `app.js`):
+Referências usadas (`INDUSTRY_STOCK_STANDARDS` em `js/config.js`):
 
 - **Largura**: 50,80mm-54,00mm (IATA Resolution 740, Attachments S1/T)
   — a única verificação **ativa** (mostra aviso se a largura medida
@@ -294,7 +322,7 @@ por talão). Classificação:
 | < 60 | Requer compilação nova |
 
 Os pesos e limiares (`WEIGHTS`, `LEN_TOLERANCE_DEFAULT`,
-`SAFE_THRESHOLD`, `RISK_THRESHOLD`) estão no topo de `app.js` e são um
+`SAFE_THRESHOLD`, `RISK_THRESHOLD`) estão em `js/config.js` e são um
 ponto de partida — ajusta-os à tua experiência de campo.
 
 ### Testes automáticos do motor
@@ -307,15 +335,17 @@ P0701/P2101) num script Node simples, sem dependências nem build:
 node scripts/test-matching.js
 ```
 
-Carrega `data.js`+`app.js` tal como estão num contexto `vm` isolado
-(sem tocar no browser real) e cobre: match exato, desvios isolados em
-`pax`/`main`/`add`, o caso especial de desalinhamento acumulado por talão,
-exclusões (`dir`/`st`/`len`), `stubLengths` vs. `add` uniforme,
-inconsistência `len`≠soma das secções, direção `UNKNOWN`, PECTABs fora de
-uso (`inUse:false`) nunca ganham a um candidato ativo, grupos fisicamente
+Carrega `data.js`+`js/*.js` tal como estão (pela mesma ordem que
+`index.html` usa) num contexto `vm` isolado (sem tocar no browser real) e
+cobre: match exato, desvios isolados em `pax`/`main`/`add`, o caso
+especial de desalinhamento acumulado por talão, exclusões
+(`dir`/`st`/`len`), `stubLengths` vs. `add` uniforme, inconsistência
+`len`≠soma das secções, direção `UNKNOWN`, PECTABs fora de uso
+(`inUse:false`) nunca ganham a um candidato ativo, grupos fisicamente
 indistinguíveis, e uma passagem de self-match pelo catálogo completo (0
-crashes, 0 anomalias). Sai com código 1 se alguma asserção falhar — serve
-de rede de segurança antes de qualquer divisão de `app.js` em módulos.
+crashes, 0 anomalias). Sai com código 1 se alguma asserção falhar — foi
+esta rede de segurança que permitiu dividir o antigo `app.js` monolítico
+em `js/*.js` com confiança (ver "Estrutura dos ficheiros" acima).
 
 ## Importar medidas de um .docx
 
@@ -425,7 +455,7 @@ na página só por ser importado.
 
 Para validar o motor de matching não só em casos isolados mas nos 173
 registos reais de uma vez, corremos `matchOne`/`computeMatches` (o
-código de `app.js`, sem alterações) fora do browser, fazendo
+código de `js/matching.js`, sem alterações) fora do browser, fazendo
 self-match de cada registo contra si próprio e contra o catálogo
 inteiro, a duas tolerâncias (0mm e 6mm). Resultado: zero crashes, zero
 self-matches que não dessem "exato", zero anomalias na decisão
