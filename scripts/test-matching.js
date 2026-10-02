@@ -190,6 +190,33 @@ test("sem stubLengths, todos os talões usam o valor nominal de 'add'", () => {
   assert.ok(addSections.every((s) => s.len === rec.add));
 });
 
+// os testes de stubLengths acima só provam que sectionSum/sectionsFor
+// desenham os comprimentos reais — não provam que o PRÓPRIO matchOne
+// interpreta eq=false corretamente em todos os caminhos de decisão. Os
+// dois testes seguintes cobrem esse lado, com um fixture real do catálogo
+// que não tem stubLengths (P5003: eq=false, st=2, sem stubLengths).
+
+test("eq=false sem stubLengths -> aviso warn.eqN (não warn.eqNKnown)", () => {
+  const rec = byId("P5003");
+  assert.strictEqual(rec.eq, false, "P5003 deixou de ser eq=false — escolhe outro fixture");
+  assert.strictEqual(rec.stubLengths, undefined, "P5003 deixou de ser o fixture sem stubLengths — escolhe outro");
+  const m = matchOne(fieldsOf(rec), rec);
+  assert.ok(m.reasons.some((r) => r.key === "warn.eqN"), "devia avisar com warn.eqN quando eq=false e não há stubLengths");
+  assert.ok(!m.reasons.some((r) => r.key === "warn.eqNKnown"), "não devia usar warn.eqNKnown sem stubLengths");
+});
+
+test("eq=false nunca aciona a regra especial de 'add' uniforme (warn.addMisalign), mesmo com score alto e st>1", () => {
+  // a regra de desalinhamento acumulado (ver matchOne) só faz sentido para
+  // talões supostamente TODOS IGUAIS (eq!=false) — um eq=false já assume
+  // talões diferentes entre si, por isso um "add" que não bate não é o
+  // mesmo problema e não deve forçar 'risky' por essa via.
+  const rec = byId("P5003"); // eq=false, st=2
+  const m = matchOne(fieldsOf(rec, { add: rec.add + 1 }), rec); // desvio pequeno: score ficaria "safe" por pontuação pura
+  assert.ok(m.score >= 90, `esperava score>=90 para isolar o caso, obteve ${m.score}`);
+  assert.ok(!m.reasons.some((r) => r.key === "warn.addMisalign"), "eq=false não devia acionar warn.addMisalign");
+  assert.strictEqual(m.classification, "safe", "sem a regra especial (só para eq!=false), um score alto deve classificar 'safe'");
+});
+
 /* ---------- qualidade de dados: len vs soma das secções ---------- */
 
 test("len declarado != soma das secções dispara aviso (P0701)", () => {
@@ -223,15 +250,35 @@ test("inUse=false nunca dá decisão 'use', mesmo em match exato (P0701)", () =>
   assert.strictEqual(decisionFor(m.classification, rec), "verify", "PECTAB fora de uso nunca deve dar luz verde");
 });
 
-test("inUse=false nunca aparece à frente de um candidato ativo com score igual", () => {
-  // P0701 (inUse=false) só fica em 1º quando não há mais nenhum candidato —
-  // aqui construímos o cenário onde outro registo (ativo) tem exatamente o
-  // mesmo score (100, self-match) e confirmamos que o ativo vence.
+test("sem candidato ativo equivalente, o próprio inativo (P0701) continua em 1º", () => {
+  // este teste NÃO prova o desempate contra um ativo — só confirma que um
+  // inativo sem concorrência continua visível em 1º (em vez de desaparecer).
+  // o desempate real está no teste seguinte, com um par conhecido do
+  // catálogo que colide mesmo.
   const rec = byId("P0701");
   const cm = computeMatches(fieldsOf(rec), false);
   const top = cm.results[0];
   assert.strictEqual(top.pectab.id, "P0701", "sem outro candidato, o próprio inativo deve ficar em 1º");
   assert.strictEqual(top.pectab.inUse, false);
+});
+
+test("inUse=false SÓ perde para um ativo com a MESMA especificação física (P9501 vs P8601)", () => {
+  // par real do catálogo: P9501 (inUse=false) e P8601 (ativo) têm
+  // dir/st/len/pax/main/add idênticos — uma medida que bate em P9501 bate
+  // sempre também em P8601 com o mesmo score. Confirma a premissa antes de
+  // testar o comportamento, para este teste nunca passar por acidente se
+  // os dados do catálogo mudarem.
+  const inactive = byId("P9501");
+  const active = byId("P8601");
+  const specOf = (r) => ({ dir: r.dir, st: r.st, len: r.len, pax: r.pax, main: r.main, add: r.add });
+  assert.deepStrictEqual(specOf(inactive), specOf(active), "P9501/P8601 deixaram de ter a mesma especificação física — escolhe outro par no catálogo");
+  assert.strictEqual(inactive.inUse, false);
+  assert.notStrictEqual(active.inUse, false);
+
+  const cm = computeMatches(fieldsOf(inactive), false); // self-match físico de P9501, que também bate em P8601
+  const top = cm.results[0];
+  assert.strictEqual(top.pectab.id, "P8601", "um candidato ATIVO com o mesmo score nunca deve perder para um fora de uso");
+  assert.strictEqual(top.score, 100);
 });
 
 /* ---------- grupos fisicamente indistinguíveis ---------- */
