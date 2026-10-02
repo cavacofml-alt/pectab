@@ -297,6 +297,26 @@ Os pesos e limiares (`WEIGHTS`, `LEN_TOLERANCE_DEFAULT`,
 `SAFE_THRESHOLD`, `RISK_THRESHOLD`) estão no topo de `app.js` e são um
 ponto de partida — ajusta-os à tua experiência de campo.
 
+### Testes automáticos do motor
+
+`scripts/test-matching.js` formaliza as verificações que antes eram feitas
+manualmente (varrer o catálogo todo contra si próprio, casos limite como
+P0701/P2101) num script Node simples, sem dependências nem build:
+
+```
+node scripts/test-matching.js
+```
+
+Carrega `data.js`+`app.js` tal como estão num contexto `vm` isolado
+(sem tocar no browser real) e cobre: match exato, desvios isolados em
+`pax`/`main`/`add`, o caso especial de desalinhamento acumulado por talão,
+exclusões (`dir`/`st`/`len`), `stubLengths` vs. `add` uniforme,
+inconsistência `len`≠soma das secções, direção `UNKNOWN`, PECTABs fora de
+uso (`inUse:false`) nunca ganham a um candidato ativo, grupos fisicamente
+indistinguíveis, e uma passagem de self-match pelo catálogo completo (0
+crashes, 0 anomalias). Sai com código 1 se alguma asserção falhar — serve
+de rede de segurança antes de qualquer divisão de `app.js` em módulos.
+
 ## Importar medidas de um .docx
 
 O botão "Preencher a partir do .docx" no formulário "Medida física" lê um
