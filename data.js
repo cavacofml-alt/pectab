@@ -1574,7 +1574,7 @@ const PECTAB_CATALOG = [
     "add": 15,
     "eq": true,
     "inUse": true,
-    "remarks": "20/23 — barcodes outside"
+    "remarks": "barcodes outside"
   },
   {
     "id": "P6606",
